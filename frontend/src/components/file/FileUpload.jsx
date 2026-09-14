@@ -11,12 +11,12 @@ import {
     Box,
     Text,
     VStack,
-    useToast,
     Progress,
     Alert,
     AlertIcon,
     Icon,
-    Flex
+    Flex,
+    IconButton
 } from '@chakra-ui/react';
 import { useDropzone } from 'react-dropzone';
 import { uploadFile } from '../../api/client.js';
@@ -37,7 +37,6 @@ export default function FileUpload({ isOpen, onClose, onSuccess }) {
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
-    const toast = useToast();
 
     const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
         if (rejectedFiles.length > 0) {
