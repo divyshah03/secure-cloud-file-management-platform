@@ -174,8 +174,10 @@ const MobileNav = ({onOpen, ...rest}) => {
                 <IconButton
                     size="lg"
                     variant="ghost"
-                    aria-label="open menu"
+                    aria-label="Notifications"
                     icon={<FiBell/>}
+                    isDisabled
+                    title="Notifications coming soon"
                 />
                 <Flex alignItems={'center'}>
                     <Menu>
