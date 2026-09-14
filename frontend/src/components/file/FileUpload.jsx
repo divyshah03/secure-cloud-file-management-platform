@@ -22,16 +22,9 @@ import { useDropzone } from 'react-dropzone';
 import { uploadFile } from '../../api/client.js';
 import { errorNotification, successNotification } from '../../notification.js';
 import { FiUpload, FiFile, FiX } from 'react-icons/fi';
+import { formatFileSize } from '../../utils/formatFileSize.js';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-
-const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-};
 
 export default function FileUpload({ isOpen, onClose, onSuccess }) {
     const [selectedFile, setSelectedFile] = useState(null);
