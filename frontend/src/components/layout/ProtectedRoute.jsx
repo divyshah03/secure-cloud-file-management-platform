@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthProvider.jsx';
+import { useAuth } from '../../AuthProvider.jsx';
 import {Box, Spinner} from '@chakra-ui/react';
 
 const ProtectedRoute = ({ children }) => {

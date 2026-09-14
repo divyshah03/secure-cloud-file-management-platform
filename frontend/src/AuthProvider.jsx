@@ -4,7 +4,7 @@ import {
     useEffect,
     useState
 } from "react";
-import { login as performLogin } from '../api/client.js';
+import { login as performLogin } from './api/client.js';
 import jwtDecode from "jwt-decode";
 
 const AuthContext = createContext({});

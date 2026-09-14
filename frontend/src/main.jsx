@@ -6,7 +6,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import EmailVerification from './pages/EmailVerification.jsx';
-import AuthProvider from './context/AuthProvider.jsx';
+import AuthProvider from './AuthProvider.jsx';
 import ProtectedRoute from './components/layout/ProtectedRoute.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Files from './pages/Files.jsx';

@@ -1,4 +1,4 @@
-import { useAuth } from '../context/AuthProvider.jsx';
+import { useAuth } from '../AuthProvider.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Flex, Heading, Image, Link, Stack, Text, Box, Button, FormLabel, Input, Alert, AlertIcon } from '@chakra-ui/react';

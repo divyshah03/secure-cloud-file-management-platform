@@ -29,7 +29,7 @@ import {
     FiSettings,
     FiFile
 } from 'react-icons/fi';
-import { useAuth } from '../../context/AuthProvider.jsx';
+import { useAuth } from '../../AuthProvider.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const LinkItems = [
