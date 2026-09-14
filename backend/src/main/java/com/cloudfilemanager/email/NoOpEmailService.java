@@ -12,15 +12,15 @@ public class NoOpEmailService implements EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(NoOpEmailService.class);
     
-    private final String baseUrl;
+    private final String frontendUrl;
 
-    public NoOpEmailService(@Value("${app.base-url:http://localhost:8080}") String baseUrl) {
-        this.baseUrl = baseUrl;
+    public NoOpEmailService(@Value("${app.frontend-url:http://localhost:5173}") String frontendUrl) {
+        this.frontendUrl = frontendUrl;
     }
 
     @Override
     public void sendVerificationEmail(String toEmail, String userName, String token) {
-        String verificationUrl = baseUrl + "/api/v1/auth/verify-email?token=" + token;
+        String verificationUrl = frontendUrl + "/verify-email?token=" + token;
         logger.info("Email sending is disabled. Verification token for {}: {}", toEmail, token);
         logger.info("Verification URL: {}", verificationUrl);
     }

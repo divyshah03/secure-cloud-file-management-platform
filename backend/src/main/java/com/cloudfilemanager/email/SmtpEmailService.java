@@ -17,17 +17,17 @@ public class SmtpEmailService implements EmailService {
 
     private final JavaMailSender mailSender;
     private final String fromEmail;
-    private final String baseUrl;
+    private final String frontendUrl;
     private final boolean emailEnabled;
 
     public SmtpEmailService(
             JavaMailSender mailSender,
             @Value("${app.email.from:noreply@filemanager.com}") String fromEmail,
-            @Value("${app.base-url:http://localhost:8080}") String baseUrl,
+            @Value("${app.frontend-url:http://localhost:5173}") String frontendUrl,
             @Value("${app.email.enabled:true}") boolean emailEnabled) {
         this.mailSender = mailSender;
         this.fromEmail = fromEmail;
-        this.baseUrl = baseUrl;
+        this.frontendUrl = frontendUrl;
         this.emailEnabled = emailEnabled;
     }
 
@@ -43,7 +43,7 @@ public class SmtpEmailService implements EmailService {
             message.setTo(toEmail);
             message.setSubject("Verify Your Email Address");
             
-            String verificationUrl = baseUrl + "/api/v1/auth/verify-email?token=" + token;
+            String verificationUrl = frontendUrl + "/verify-email?token=" + token;
             String emailBody = buildVerificationEmailBody(userName, verificationUrl, token);
             
             message.setText(emailBody);
