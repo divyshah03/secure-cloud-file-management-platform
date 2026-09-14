@@ -8,7 +8,6 @@ A secure, scalable file management web application built with Spring Boot and Re
 - **JWT Authentication**: Secure authentication using JSON Web Tokens and Spring Security
 - **Role-Based Access Control**: Data isolation ensuring users can only access their own files
 - **Cloud Storage**: AWS S3 integration for scalable file storage
-- **Optimized Performance**: REST APIs optimized for 25% reduced retrieval latency
 - **PostgreSQL Database**: Persistent metadata storage for files and user information
 - **Email Verification**: User signup with email verification flow
 - **File Size Support**: Handle files up to 50 MB
@@ -38,6 +37,14 @@ A secure, scalable file management web application built with Spring Boot and Re
 - AWS Account (for S3) or use local mock storage
 
 ## 🔧 Setup Instructions
+
+### Quick start with Docker
+
+```bash
+docker compose up --build
+```
+
+Frontend: `http://localhost:3000` · Backend: `http://localhost:8080`
 
 ### Backend Setup
 
@@ -72,7 +79,8 @@ A secure, scalable file management web application built with Spring Boot and Re
 
 2. **Configure API URL**
    ```bash
-   # Update API base URL in src/api/client.js
+   cp .env.example .env
+   # Edit VITE_API_BASE_URL if your backend is not on http://localhost:8080
    ```
 
 3. **Run Development Server**
@@ -104,17 +112,15 @@ backend/
 frontend/
 ├── src/
 │   ├── api/            # API client
-│   ├── components/     # Reusable UI components (file/, layout/)
-│   ├── context/        # AuthProvider (auth state/context)
+│   ├── components/     # Reusable UI components (file/, layout/, forms/)
 │   ├── pages/          # Route page components
 │   └── utils/          # Utility functions
 ```
 
 ## 🧪 Testing
 
-- Tested with 20+ concurrent user accounts
+- Backend unit tests with JUnit and Testcontainers
 - File uploads up to 50 MB
-- Optimized API responses (25% latency reduction)
 - Role-based access control validation
 
 ## 📝 API Endpoints
@@ -123,7 +129,7 @@ frontend/
 - `POST /api/v1/auth/login` - User authentication
 - `POST /api/v1/auth/verify-email` - Email verification
 - `GET /api/v1/files` - List user files
-- `POST /api/v1/files/upload` - Upload file
+- `POST /api/v1/files` - Upload file
 - `GET /api/v1/files/{id}/download` - Download file
 - `DELETE /api/v1/files/{id}` - Delete file
 
