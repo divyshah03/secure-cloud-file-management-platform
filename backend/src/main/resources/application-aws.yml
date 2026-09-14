@@ -4,6 +4,6 @@ aws:
 
 spring:
   datasource:
-    url: jdbc-secretsmanager:postgresql://awseb-e-ezjnxfjb44-stack-awsebrdsdatabase-f2ocmocryc5g.celswdmxhcr1.eu-west-1.rds.amazonaws.com:5432/ebdb
-    username: test/full-stack/postgres
+    url: jdbc-secretsmanager:postgresql://${RDS_HOST}:${RDS_PORT:5432}/${RDS_DB:ebdb}
+    username: ${RDS_SECRET_NAME}
     driver-class-name: com.amazonaws.secretsmanager.sql.AWSSecretsManagerPostgreSQLDriver
