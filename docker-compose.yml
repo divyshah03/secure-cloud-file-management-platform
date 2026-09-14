@@ -1,0 +1,59 @@
+name: cloud-file-manager
+
+services:
+  db:
+    container_name: cloud-file-manager-db
+    image: postgres:14.1
+    environment:
+      POSTGRES_USER: filemanager
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: filemanager
+      PGDATA: /data/postgres
+    volumes:
+      - db:/data/postgres
+    ports:
+      - "${DB_HOST_PORT:-5332}:5432"
+    networks:
+      - db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U filemanager -d filemanager"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+  backend:
+    container_name: cloud-file-manager-backend
+    build:
+      context: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/filemanager
+      SPRING_DATASOURCE_USERNAME: filemanager
+      SPRING_DATASOURCE_PASSWORD: password
+      AWS_S3_MOCK: "true"
+      EMAIL_ENABLED: "false"
+    ports:
+      - "8080:8080"
+    networks:
+      - db
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+  frontend:
+    container_name: cloud-file-manager-frontend
+    build:
+      context: ./frontend
+      args:
+        api_base_url: http://localhost:8080
+    ports:
+      - "3000:5173"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  db:
+    driver: bridge
+
+volumes:
+  db:

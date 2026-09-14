@@ -1,0 +1,120 @@
+package com.cloudfilemanager.file;
+
+import com.cloudfilemanager.user.User;
+import com.cloudfilemanager.file.dto.FileDTO;
+import com.cloudfilemanager.file.dto.FileUploadResponse;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/v1/files")
+public class FileController {
+
+    private final FileService fileService;
+
+    public FileController(FileService fileService) {
+        this.fileService = fileService;
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<FileUploadResponse> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal User user) {
+        
+        FileUploadResponse response = fileService.uploadFile(file, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Page<FileDTO>> getUserFiles(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir,
+            @AuthenticationPrincipal User user) {
+        
+        Sort sort = sortDir.equalsIgnoreCase("ASC") 
+                ? Sort.by(sortBy).ascending() 
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        Page<FileDTO> files = fileService.getUserFiles(user, pageable);
+        return ResponseEntity.ok(files);
+    }
+
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<FileDTO>> getAllUserFiles(@AuthenticationPrincipal User user) {
+        List<FileDTO> files = fileService.getAllUserFiles(user);
+        return ResponseEntity.ok(files);
+    }
+
+    @GetMapping("/{fileId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<FileDTO> getFile(
+            @PathVariable Long fileId,
+            @AuthenticationPrincipal User user) {
+        FileDTO file = fileService.getFileById(fileId, user);
+        return ResponseEntity.ok(file);
+    }
+
+    @GetMapping("/{fileId}/download")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Resource> downloadFile(
+            @PathVariable Long fileId,
+            @AuthenticationPrincipal User user) {
+        
+        FileDTO fileDTO = fileService.getFileById(fileId, user);
+        byte[] fileData = fileService.downloadFile(fileId, user);
+        
+        ByteArrayResource resource = new ByteArrayResource(fileData);
+        
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, 
+                        "attachment; filename=\"" + fileDTO.originalFileName() + "\"")
+                .contentType(MediaType.parseMediaType(fileDTO.contentType()))
+                .contentLength(fileData.length)
+                .body(resource);
+    }
+
+    @DeleteMapping("/{fileId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Map<String, String>> deleteFile(
+            @PathVariable Long fileId,
+            @AuthenticationPrincipal User user) {
+        fileService.deleteFile(fileId, user);
+        return ResponseEntity.ok(Map.of("message", "File deleted successfully"));
+    }
+
+    @GetMapping("/stats")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Map<String, Object>> getFileStats(@AuthenticationPrincipal User user) {
+        long fileCount = fileService.getUserFileCount(user);
+        long totalSize = fileService.getUserTotalFileSize(user);
+        
+        return ResponseEntity.ok(Map.of(
+                "fileCount", fileCount,
+                "totalSize", totalSize,
+                "totalSizeMB", String.format("%.2f", totalSize / (1024.0 * 1024.0))
+        ));
+    }
+}
