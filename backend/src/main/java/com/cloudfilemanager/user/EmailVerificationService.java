@@ -21,7 +21,7 @@ public class EmailVerificationService {
     public EmailVerificationService(
             UserRepository userRepository,
             EmailService emailService,
-            @Value("${app.verification.token-expiration-hours:24}") Long tokenExpirationHours) {
+            @Value("${app.email.verification.token-expiration-hours:24}") Long tokenExpirationHours) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.tokenExpirationHours = tokenExpirationHours;

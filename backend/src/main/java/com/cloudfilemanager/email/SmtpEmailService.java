@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @org.springframework.context.annotation.Primary
-@ConditionalOnProperty(name = "app.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "app.email.enabled", havingValue = "true", matchIfMissing = true)
 public class SmtpEmailService implements EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(SmtpEmailService.class);
@@ -22,9 +22,9 @@ public class SmtpEmailService implements EmailService {
 
     public SmtpEmailService(
             JavaMailSender mailSender,
-            @Value("${app.from:noreply@filemanager.com}") String fromEmail,
+            @Value("${app.email.from:noreply@filemanager.com}") String fromEmail,
             @Value("${app.base-url:http://localhost:8080}") String baseUrl,
-            @Value("${app.enabled:true}") boolean emailEnabled) {
+            @Value("${app.email.enabled:true}") boolean emailEnabled) {
         this.mailSender = mailSender;
         this.fromEmail = fromEmail;
         this.baseUrl = baseUrl;
