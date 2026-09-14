@@ -15,7 +15,7 @@ import {
 import {Formik, Form, useField} from "formik";
 import * as Yup from 'yup';
 import { useAuth } from '../context/AuthProvider.jsx';
-import { errorNotification, successNotification } from '../utils/notification.js';
+import { errorNotification, successNotification } from '../notification.js';
 import {useNavigate} from "react-router-dom";
 import {useEffect} from "react";
 

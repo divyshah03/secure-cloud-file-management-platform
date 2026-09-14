@@ -20,7 +20,7 @@ import {
 } from '@chakra-ui/react';
 import { useDropzone } from 'react-dropzone';
 import { uploadFile } from '../../api/client.js';
-import { errorNotification, successNotification } from '../../utils/notification.js';
+import { errorNotification, successNotification } from '../../notification.js';
 import { FiUpload, FiFile, FiX } from 'react-icons/fi';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB

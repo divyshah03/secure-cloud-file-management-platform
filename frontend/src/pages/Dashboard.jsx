@@ -15,7 +15,7 @@ import {
 import Sidebar from '../components/layout/Sidebar.jsx';
 import { useEffect, useState } from 'react';
 import { getFileStats, getFiles } from '../api/client.js';
-import { errorNotification } from '../utils/notification.js';
+import { errorNotification } from '../notification.js';
 import { useNavigate } from 'react-router-dom';
 import { AddIcon } from '@chakra-ui/icons';
 

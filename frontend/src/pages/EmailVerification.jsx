@@ -18,7 +18,7 @@ import {
     Flex
 } from '@chakra-ui/react';
 import { verifyEmail, verifyEmailPost, resendVerificationEmail } from '../api/client.js';
-import { errorNotification, successNotification } from '../utils/notification.js';
+import { errorNotification, successNotification } from '../notification.js';
 
 const EmailVerification = () => {
     const [searchParams] = useSearchParams();

@@ -23,7 +23,7 @@ import { useEffect, useState } from 'react';
 import { getFiles, deleteFile, downloadFileAsBlob, getFileStats } from '../api/client.js';
 import FileCard from '../components/file/FileCard.jsx';
 import FileUpload from '../components/file/FileUpload.jsx';
-import { errorNotification, successNotification } from '../utils/notification.js';
+import { errorNotification, successNotification } from '../notification.js';
 
 const Files = () => {
     const [files, setFiles] = useState([]);

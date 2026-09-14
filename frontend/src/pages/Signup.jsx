@@ -5,7 +5,7 @@ import { Flex, Heading, Image, Link, Stack, Text, Box, Button, FormLabel, Input,
 import { Formik, Form, useField } from 'formik';
 import * as Yup from 'yup';
 import { register } from '../api/client.js';
-import { errorNotification, successNotification } from '../utils/notification.js';
+import { errorNotification, successNotification } from '../notification.js';
 
 const MyTextInput = ({label, ...props}) => {
     const [field, meta] = useField(props);
