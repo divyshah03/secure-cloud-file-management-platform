@@ -16,13 +16,13 @@ import java.util.Map;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 @Service
-public class JWTUtil {
+public class JwtUtil {
 
     private final String secretKey;
     private final String issuer;
     private final Long expirationDays;
 
-    public JWTUtil(
+    public JwtUtil(
             @Value("${app.jwt.secret-key:#{T(java.util.UUID).randomUUID().toString().replace('-','').repeat(2)}}") String secretKey,
             @Value("${app.jwt.issuer:FileManagementSystem}") String issuer,
             @Value("${app.jwt.expiration-days:15}") Long expirationDays) {

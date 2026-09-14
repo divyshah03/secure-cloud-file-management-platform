@@ -18,13 +18,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-public class JWTAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
-    private final JWTUtil jwtUtil;
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
 
-    public JWTAuthenticationFilter(JWTUtil jwtUtil, UserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
     }

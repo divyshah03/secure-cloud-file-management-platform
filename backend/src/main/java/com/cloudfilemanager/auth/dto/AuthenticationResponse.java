@@ -1,8 +1,8 @@
 package com.cloudfilemanager.auth.dto;
 
-import com.cloudfilemanager.user.dto.UserDTO;
+import com.cloudfilemanager.user.dto.UserDto;
 public record AuthenticationResponse(
         String token,
-        UserDTO user
+        UserDto user
 ) {
 }

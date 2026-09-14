@@ -3,7 +3,7 @@ package com.cloudfilemanager.file;
 import com.cloudfilemanager.user.User;
 import com.cloudfilemanager.storage.S3Buckets;
 import com.cloudfilemanager.storage.S3Service;
-import com.cloudfilemanager.file.dto.FileDTO;
+import com.cloudfilemanager.file.dto.FileDto;
 import com.cloudfilemanager.file.dto.FileUploadResponse;
 import com.cloudfilemanager.common.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
@@ -23,17 +23,17 @@ public class FileService {
     private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 
     private final FileRepository fileRepository;
-    private final FileDTOMapper fileDTOMapper;
+    private final FileDtoMapper fileDtoMapper;
     private final S3Service s3Service;
     private final S3Buckets s3Buckets;
 
     public FileService(
             FileRepository fileRepository,
-            FileDTOMapper fileDTOMapper,
+            FileDtoMapper fileDtoMapper,
             S3Service s3Service,
             S3Buckets s3Buckets) {
         this.fileRepository = fileRepository;
-        this.fileDTOMapper = fileDTOMapper;
+        this.fileDtoMapper = fileDtoMapper;
         this.s3Service = s3Service;
         this.s3Buckets = s3Buckets;
     }
@@ -86,22 +86,22 @@ public class FileService {
         }
     }
 
-    public FileDTO getFileById(Long fileId, User owner) {
+    public FileDto getFileById(Long fileId, User owner) {
         File file = fileRepository.findByIdAndOwner(fileId, owner)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "File not found with id: " + fileId));
-        return fileDTOMapper.apply(file);
+        return fileDtoMapper.apply(file);
     }
 
-    public Page<FileDTO> getUserFiles(User owner, Pageable pageable) {
+    public Page<FileDto> getUserFiles(User owner, Pageable pageable) {
         return fileRepository.findByOwner(owner, pageable)
-                .map(fileDTOMapper);
+                .map(fileDtoMapper);
     }
 
-    public List<FileDTO> getAllUserFiles(User owner) {
+    public List<FileDto> getAllUserFiles(User owner) {
         return fileRepository.findByOwner(owner)
                 .stream()
-                .map(fileDTOMapper)
+                .map(fileDtoMapper)
                 .collect(Collectors.toList());
     }
 

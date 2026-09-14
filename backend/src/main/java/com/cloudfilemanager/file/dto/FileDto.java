@@ -2,7 +2,7 @@ package com.cloudfilemanager.file.dto;
 
 import java.time.LocalDateTime;
 
-public record FileDTO(
+public record FileDto(
         Long id,
         String fileName,
         String originalFileName,

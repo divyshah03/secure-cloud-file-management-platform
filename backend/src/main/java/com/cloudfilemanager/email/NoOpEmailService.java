@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @ConditionalOnProperty(name = "app.enabled", havingValue = "false", matchIfMissing = false)
-public class NoOpEmailService implements EmailServiceInterface {
+public class NoOpEmailService implements EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(NoOpEmailService.class);
     

@@ -1,7 +1,7 @@
 package com.cloudfilemanager.file;
 
 import com.cloudfilemanager.user.User;
-import com.cloudfilemanager.file.dto.FileDTO;
+import com.cloudfilemanager.file.dto.FileDto;
 import com.cloudfilemanager.file.dto.FileUploadResponse;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -45,35 +45,35 @@ public class FileController {
 
     @GetMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Page<FileDTO>> getUserFiles(
+    public ResponseEntity<Page<FileDto>> getUserFiles(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir,
             @AuthenticationPrincipal User user) {
-        
-        Sort sort = sortDir.equalsIgnoreCase("ASC") 
-                ? Sort.by(sortBy).ascending() 
+
+        Sort sort = sortDir.equalsIgnoreCase("ASC")
+                ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        
-        Page<FileDTO> files = fileService.getUserFiles(user, pageable);
+
+        Page<FileDto> files = fileService.getUserFiles(user, pageable);
         return ResponseEntity.ok(files);
     }
 
     @GetMapping("/all")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<FileDTO>> getAllUserFiles(@AuthenticationPrincipal User user) {
-        List<FileDTO> files = fileService.getAllUserFiles(user);
+    public ResponseEntity<List<FileDto>> getAllUserFiles(@AuthenticationPrincipal User user) {
+        List<FileDto> files = fileService.getAllUserFiles(user);
         return ResponseEntity.ok(files);
     }
 
     @GetMapping("/{fileId}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<FileDTO> getFile(
+    public ResponseEntity<FileDto> getFile(
             @PathVariable Long fileId,
             @AuthenticationPrincipal User user) {
-        FileDTO file = fileService.getFileById(fileId, user);
+        FileDto file = fileService.getFileById(fileId, user);
         return ResponseEntity.ok(file);
     }
 
@@ -83,15 +83,15 @@ public class FileController {
             @PathVariable Long fileId,
             @AuthenticationPrincipal User user) {
         
-        FileDTO fileDTO = fileService.getFileById(fileId, user);
+        FileDto fileDto = fileService.getFileById(fileId, user);
         byte[] fileData = fileService.downloadFile(fileId, user);
-        
+
         ByteArrayResource resource = new ByteArrayResource(fileData);
-        
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, 
-                        "attachment; filename=\"" + fileDTO.originalFileName() + "\"")
-                .contentType(MediaType.parseMediaType(fileDTO.contentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + fileDto.originalFileName() + "\"")
+                .contentType(MediaType.parseMediaType(fileDto.contentType()))
                 .contentLength(fileData.length)
                 .body(resource);
     }

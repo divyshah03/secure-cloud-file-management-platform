@@ -1,6 +1,6 @@
 package com.cloudfilemanager.user;
 
-import com.cloudfilemanager.user.dto.UserDTO;
+import com.cloudfilemanager.user.dto.UserDto;
 import com.cloudfilemanager.user.dto.UserRegistrationRequest;
 import com.cloudfilemanager.common.exception.DuplicateResourceException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,23 +11,23 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final UserDTOMapper userDTOMapper;
+    private final UserDtoMapper userDtoMapper;
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
 
     public UserService(
             UserRepository userRepository,
-            UserDTOMapper userDTOMapper,
+            UserDtoMapper userDtoMapper,
             PasswordEncoder passwordEncoder,
             EmailVerificationService emailVerificationService) {
         this.userRepository = userRepository;
-        this.userDTOMapper = userDTOMapper;
+        this.userDtoMapper = userDtoMapper;
         this.passwordEncoder = passwordEncoder;
         this.emailVerificationService = emailVerificationService;
     }
 
     @Transactional
-    public UserDTO registerUser(UserRegistrationRequest request) {
+    public UserDto registerUser(UserRegistrationRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new DuplicateResourceException("Email already taken: " + request.email());
         }
@@ -43,19 +43,19 @@ public class UserService {
         User savedUser = userRepository.save(user);
         emailVerificationService.generateAndSendVerificationToken(savedUser);
 
-        return userDTOMapper.apply(savedUser);
+        return userDtoMapper.apply(savedUser);
     }
 
-    public UserDTO getUserByEmail(String email) {
+    public UserDto getUserByEmail(String email) {
         return userRepository.findByEmail(email)
-                .map(userDTOMapper)
+                .map(userDtoMapper)
                 .orElseThrow(() -> new com.cloudfilemanager.common.exception.ResourceNotFoundException(
                         "User not found with email: " + email));
     }
 
-    public UserDTO getUserById(Long id) {
+    public UserDto getUserById(Long id) {
         return userRepository.findById(id)
-                .map(userDTOMapper)
+                .map(userDtoMapper)
                 .orElseThrow(() -> new com.cloudfilemanager.common.exception.ResourceNotFoundException(
                         "User not found with id: " + id));
     }

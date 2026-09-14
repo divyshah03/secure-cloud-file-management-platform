@@ -1,16 +1,16 @@
 package com.cloudfilemanager.user;
 
-import com.cloudfilemanager.user.dto.UserDTO;
+import com.cloudfilemanager.user.dto.UserDto;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Function;
 
 @Component
-public class UserDTOMapper implements Function<User, UserDTO> {
-    
+public class UserDtoMapper implements Function<User, UserDto> {
+
     @Override
-    public UserDTO apply(User user) {
-        return new UserDTO(
+    public UserDto apply(User user) {
+        return new UserDto(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),

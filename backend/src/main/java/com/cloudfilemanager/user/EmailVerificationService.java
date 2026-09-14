@@ -1,6 +1,6 @@
 package com.cloudfilemanager.user;
 
-import com.cloudfilemanager.email.EmailServiceInterface;
+import com.cloudfilemanager.email.EmailService;
 import com.cloudfilemanager.common.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,13 +14,13 @@ import java.util.UUID;
 public class EmailVerificationService {
 
     private final UserRepository userRepository;
-    private final EmailServiceInterface emailService;
+    private final EmailService emailService;
     private final Long tokenExpirationHours;
 
     @Autowired
     public EmailVerificationService(
             UserRepository userRepository,
-            EmailServiceInterface emailService,
+            EmailService emailService,
             @Value("${app.verification.token-expiration-hours:24}") Long tokenExpirationHours) {
         this.userRepository = userRepository;
         this.emailService = emailService;

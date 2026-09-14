@@ -1,8 +1,8 @@
 package com.cloudfilemanager.auth;
 
-import com.cloudfilemanager.user.UserDTOMapper;
+import com.cloudfilemanager.user.UserDtoMapper;
 import com.cloudfilemanager.user.User;
-import com.cloudfilemanager.security.JWTUtil;
+import com.cloudfilemanager.security.JwtUtil;
 import com.cloudfilemanager.auth.dto.AuthenticationRequest;
 import com.cloudfilemanager.auth.dto.AuthenticationResponse;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,15 +15,15 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
-    private final UserDTOMapper userDTOMapper;
-    private final JWTUtil jwtUtil;
+    private final UserDtoMapper userDtoMapper;
+    private final JwtUtil jwtUtil;
 
     public AuthenticationService(
             AuthenticationManager authenticationManager,
-            UserDTOMapper userDTOMapper,
-            JWTUtil jwtUtil) {
+            UserDtoMapper userDtoMapper,
+            JwtUtil jwtUtil) {
         this.authenticationManager = authenticationManager;
-        this.userDTOMapper = userDTOMapper;
+        this.userDtoMapper = userDtoMapper;
         this.jwtUtil = jwtUtil;
     }
 
@@ -42,10 +42,10 @@ public class AuthenticationService {
                 throw new IllegalStateException("Email not verified. Please verify your email before logging in.");
             }
 
-            com.cloudfilemanager.user.dto.UserDTO userDTO = userDTOMapper.apply(principal);
-            String token = jwtUtil.issueToken(userDTO.email(), userDTO.role().name());
-            
-            return new AuthenticationResponse(token, userDTO);
+            com.cloudfilemanager.user.dto.UserDto userDto = userDtoMapper.apply(principal);
+            String token = jwtUtil.issueToken(userDto.email(), userDto.role().name());
+
+            return new AuthenticationResponse(token, userDto);
         } catch (org.springframework.security.authentication.BadCredentialsException e) {
             throw new BadCredentialsException("Invalid email or password");
         }
