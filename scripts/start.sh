@@ -7,6 +7,9 @@ set -e
 
 echo "🚀 Starting Cloud File Manager..."
 
+# Create logs directory if it doesn't exist
+mkdir -p logs
+
 # Start backend in background
 echo "Starting backend..."
 cd backend
@@ -26,9 +29,6 @@ npm run dev &
 FRONTEND_PID=$!
 echo "Frontend started (PID: $FRONTEND_PID)"
 cd ..
-
-# Create logs directory if it doesn't exist
-mkdir -p logs
 
 echo ""
 echo "✅ Services started!"
