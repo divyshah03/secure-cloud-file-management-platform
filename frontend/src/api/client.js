@@ -2,6 +2,27 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
+const api = axios.create({
+    baseURL: API_BASE_URL
+});
+
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const status = error.response?.status;
+        const url = error.config?.url || '';
+        const isAuthEndpoint = url.includes('/api/v1/auth/');
+
+        if (status === 401 && !isAuthEndpoint) {
+            localStorage.removeItem('access_token');
+            if (window.location.pathname !== '/login') {
+                window.location.assign('/login');
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 const getAuthConfig = () => ({
     headers: {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`
@@ -11,8 +32,8 @@ const getAuthConfig = () => ({
 // Authentication APIs
 export const register = async (userData) => {
     try {
-        return await axios.post(
-            `${API_BASE_URL}/api/v1/auth/register`,
+        return await api.post(
+            `/api/v1/auth/register`,
             userData
         );
     } catch (e) {
@@ -22,8 +43,8 @@ export const register = async (userData) => {
 
 export const login = async (credentials) => {
     try {
-        const response = await axios.post(
-            `${API_BASE_URL}/api/v1/auth/login`,
+        const response = await api.post(
+            `/api/v1/auth/login`,
             credentials
         );
         // Extract token from response header
@@ -39,8 +60,8 @@ export const login = async (credentials) => {
 
 export const verifyEmail = async (token) => {
     try {
-        return await axios.get(
-            `${API_BASE_URL}/api/v1/auth/verify-email`,
+        return await api.get(
+            `/api/v1/auth/verify-email`,
             { params: { token } }
         );
     } catch (e) {
@@ -50,8 +71,8 @@ export const verifyEmail = async (token) => {
 
 export const verifyEmailPost = async (token) => {
     try {
-        return await axios.post(
-            `${API_BASE_URL}/api/v1/auth/verify-email`,
+        return await api.post(
+            `/api/v1/auth/verify-email`,
             { token }
         );
     } catch (e) {
@@ -61,8 +82,8 @@ export const verifyEmailPost = async (token) => {
 
 export const resendVerificationEmail = async (email) => {
     try {
-        return await axios.post(
-            `${API_BASE_URL}/api/v1/auth/resend-verification`,
+        return await api.post(
+            `/api/v1/auth/resend-verification`,
             { email }
         );
     } catch (e) {
@@ -71,17 +92,27 @@ export const resendVerificationEmail = async (email) => {
 };
 
 // File Management APIs
-export const uploadFile = async (file) => {
+export const uploadFile = async (file, onUploadProgress) => {
     try {
         const formData = new FormData();
         formData.append('file', file);
         
-        return await axios.post(
-            `${API_BASE_URL}/api/v1/files`,
+        return await api.post(
+            `/api/v1/files`,
             formData,
             {
                 ...getAuthConfig(),
-                'Content-Type': 'multipart/form-data'
+                headers: {
+                    ...getAuthConfig().headers,
+                    'Content-Type': 'multipart/form-data'
+                },
+                onUploadProgress: onUploadProgress
+                    ? (event) => {
+                        if (event.total) {
+                            onUploadProgress(Math.round((event.loaded * 100) / event.total));
+                        }
+                    }
+                    : undefined
             }
         );
     } catch (e) {
@@ -91,8 +122,8 @@ export const uploadFile = async (file) => {
 
 export const getFiles = async (page = 0, size = 20, sortBy = 'createdAt', sortDir = 'DESC') => {
     try {
-        return await axios.get(
-            `${API_BASE_URL}/api/v1/files`,
+        return await api.get(
+            `/api/v1/files`,
             {
                 ...getAuthConfig(),
                 params: { page, size, sortBy, sortDir }
@@ -105,8 +136,8 @@ export const getFiles = async (page = 0, size = 20, sortBy = 'createdAt', sortDi
 
 export const getAllFiles = async () => {
     try {
-        return await axios.get(
-            `${API_BASE_URL}/api/v1/files/all`,
+        return await api.get(
+            `/api/v1/files/all`,
             getAuthConfig()
         );
     } catch (e) {
@@ -116,8 +147,8 @@ export const getAllFiles = async () => {
 
 export const getFileById = async (fileId) => {
     try {
-        return await axios.get(
-            `${API_BASE_URL}/api/v1/files/${fileId}`,
+        return await api.get(
+            `/api/v1/files/${fileId}`,
             getAuthConfig()
         );
     } catch (e) {
@@ -127,8 +158,8 @@ export const getFileById = async (fileId) => {
 
 export const downloadFile = async (fileId) => {
     try {
-        const response = await axios.get(
-            `${API_BASE_URL}/api/v1/files/${fileId}/download`,
+        const response = await api.get(
+            `/api/v1/files/${fileId}/download`,
             {
                 ...getAuthConfig(),
                 responseType: 'blob'
@@ -142,8 +173,8 @@ export const downloadFile = async (fileId) => {
 
 export const deleteFile = async (fileId) => {
     try {
-        return await axios.delete(
-            `${API_BASE_URL}/api/v1/files/${fileId}`,
+        return await api.delete(
+            `/api/v1/files/${fileId}`,
             getAuthConfig()
         );
     } catch (e) {
@@ -153,8 +184,8 @@ export const deleteFile = async (fileId) => {
 
 export const getFileStats = async () => {
     try {
-        return await axios.get(
-            `${API_BASE_URL}/api/v1/files/stats`,
+        return await api.get(
+            `/api/v1/files/stats`,
             getAuthConfig()
         );
     } catch (e) {
