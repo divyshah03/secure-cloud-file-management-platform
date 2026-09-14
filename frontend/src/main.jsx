@@ -10,6 +10,7 @@ import AuthProvider from './AuthProvider.jsx';
 import ProtectedRoute from './components/layout/ProtectedRoute.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Files from './pages/Files.jsx';
+import Settings from './pages/Settings.jsx';
 
 const { ToastContainer } = createStandaloneToast();
 
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
     {
         path: '/dashboard/files',
         element: <ProtectedRoute><Files /></ProtectedRoute>
+    },
+    {
+        path: '/dashboard/settings',
+        element: <ProtectedRoute><Settings /></ProtectedRoute>
     }
 ]);
 
