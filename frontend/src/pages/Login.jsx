@@ -16,7 +16,7 @@ import {Formik, Form, useField} from "formik";
 import * as Yup from 'yup';
 import { useAuth } from '../AuthProvider.jsx';
 import { errorNotification, successNotification } from '../notification.js';
-import {useNavigate} from "react-router-dom";
+import {useNavigate, Link as RouterLink} from "react-router-dom";
 import {useEffect} from "react";
 
 const MyTextInput = ({label, ...props}) => {
@@ -127,7 +127,7 @@ const Login = () => {
                     />
                     <Heading fontSize={'2xl'} mb={15}>Sign in to Cloud File Manager</Heading>
                     <LoginForm/>
-                    <Link color={"blue.500"} href={"/signup"}>
+                    <Link as={RouterLink} color={"blue.500"} to={"/signup"}>
                         Don't have an account? Sign up now.
                     </Link>
                 </Stack>

@@ -1,5 +1,5 @@
 import { useAuth } from '../AuthProvider.jsx';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Flex, Heading, Image, Link, Stack, Text, Box, Button, FormLabel, Input, Alert, AlertIcon } from '@chakra-ui/react';
 import { Formik, Form, useField } from 'formik';
@@ -140,7 +140,7 @@ const Signup = () => {
                     />
                     <Heading fontSize={'2xl'} mb={15}>Create your account</Heading>
                     <RegistrationForm/>
-                    <Link color={"blue.500"} href={"/"}>
+                    <Link as={RouterLink} color={"blue.500"} to={"/login"}>
                         Already have an account? Login now.
                     </Link>
                 </Stack>
