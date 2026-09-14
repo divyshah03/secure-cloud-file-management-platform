@@ -13,7 +13,7 @@ import {
     HStack,
     VStack
 } from '@chakra-ui/react';
-import { TimeIcon } from '@chakra-ui/icons';
+import { TimeIcon, DownloadIcon, DeleteIcon } from '@chakra-ui/icons';
 
 const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
