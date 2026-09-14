@@ -47,34 +47,35 @@ This is a full-stack file management system with the following architecture:
 
 ### Backend Packages
 
-All backend code lives under `com.cloudfilemanager` in a flat, package-by-layer
-structure (not the nested domain/application/infrastructure/presentation
-split this document previously described):
+All backend code lives under `com.cloudfilemanager`, organized by feature
+rather than by technical layer:
 
-- **models/**: Core business entities (`User`, `File`, `Role`)
-- **repositories/**: Spring Data repositories (`UserRepository`, `FileRepository`)
-- **services/**: Business logic (`UserService`, `AuthenticationService`,
-  `FileService`, `FileDTOMapper`, `UserDTOMapper`, `EmailService`,
-  `EmailVerificationService`)
-- **controllers/**: REST controllers (`AuthController`, `FileController`,
-  `PingController`)
-- **dto/**: Data Transfer Objects (requests/responses for auth and files)
-- **config/**: Configuration classes (JWT, Spring Security, CORS, S3/FakeS3)
-- **exceptions/**: Custom exceptions and the global exception handler
-  - `util/`: Utility classes
+- **auth/**: `AuthController`, `AuthenticationService`, and the auth
+  request/response DTOs (`auth/dto/`)
+- **user/**: `User` entity, `Role`, `UserRepository`, `UserService`,
+  `UserDtoMapper`, `EmailVerificationService`, and user DTOs (`user/dto/`)
+- **file/**: `File` entity, `FileController`, `FileService`,
+  `FileRepository`, `FileDtoMapper`, and file DTOs (`file/dto/`)
+- **storage/**: `S3Service`, `S3Buckets`, `S3Config`, `FakeS3` (local
+  filesystem-backed storage for development)
+- **email/**: `EmailService` interface, `SmtpEmailService` (JavaMail-backed
+  implementation), `NoOpEmailService` (logs instead of sending)
+- **security/**: `JwtUtil`, `JwtAuthenticationFilter`, `SecurityConfig`,
+  `SecurityFilterChainConfig`, `CorsConfig`, `UserDetailsServiceImpl`,
+  `DelegatedAuthEntryPoint`
+- **common/**: `PingController` and shared exception types
+  (`common/exception/`), including `GlobalExceptionHandler`
 
 ### Frontend Structure
 
-- **api/**: API client services
+- **api/**: API client (`client.js`)
 - **components/**: Reusable UI components
-  - `file/`: File-related components
-  - `layout/`: Layout components (Sidebar, ProtectedRoute)
-- **hooks/**: Custom React hooks (AuthContext)
-- **pages/**: Route page components
-  - `auth/`: Authentication pages (Login, Signup, Email Verification)
-  - `files/`: File management pages (Files List, Dashboard)
-  - `customers/`: Legacy customer management (deprecated)
-- **utils/**: Utility functions (notifications, formatters)
+  - `file/`: File-related components (`FileCard`, `FileUpload`)
+  - `layout/`: Layout components (`Sidebar`, `ProtectedRoute`)
+- **context/**: `AuthProvider` — auth context provider and the `useAuth` hook
+- **pages/**: Route page components, one file per route (`Login`, `Signup`,
+  `EmailVerification`, `Dashboard`, `Files`)
+- **utils/**: Utility functions (notifications)
 
 ## Data Flow
 
@@ -84,7 +85,7 @@ split this document previously described):
 3. Backend validates file (size, type)
 4. File stored in S3 (or FakeS3)
 5. Metadata saved to PostgreSQL
-6. FileDTO returned to frontend
+6. FileDto returned to frontend
 
 ### Authentication Flow
 1. User submits credentials

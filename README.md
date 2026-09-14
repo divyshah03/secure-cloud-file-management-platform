@@ -93,20 +93,20 @@ A secure, scalable file management web application built with Spring Boot and Re
 ```
 backend/
 ├── src/main/java/com/cloudfilemanager/
-│   ├── models/          # Domain entities
-│   ├── repositories/    # Data access layer
-│   ├── services/        # Business logic
-│   ├── controllers/     # REST endpoints
-│   ├── dto/            # Data transfer objects
-│   ├── config/         # Configuration
-│   └── exceptions/     # Exception handling
+│   ├── auth/            # Login, AuthenticationService, auth request/response DTOs
+│   ├── user/            # User entity, repository, service, email verification, DTOs
+│   ├── file/            # File entity, repository, service, controller, DTOs
+│   ├── storage/         # S3Service, S3Buckets, FakeS3 (local dev storage)
+│   ├── email/           # EmailService interface, SmtpEmailService, NoOpEmailService
+│   ├── security/        # JWT filter/util, Spring Security config, CORS
+│   └── common/          # Shared exceptions, global exception handler, ping controller
 
 frontend/
 ├── src/
 │   ├── api/            # API client
-│   ├── components/     # React components
-│   ├── pages/          # Page components
-│   ├── hooks/          # Custom hooks
+│   ├── components/     # Reusable UI components (file/, layout/)
+│   ├── context/        # AuthProvider (auth state/context)
+│   ├── pages/          # Route page components
 │   └── utils/          # Utility functions
 ```
 
