@@ -29,7 +29,7 @@ import {
     FiSettings,
     FiFile
 } from 'react-icons/fi';
-import { useAuth } from '../../hooks/AuthContext.jsx';
+import { useAuth } from '../../context/AuthProvider.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const LinkItems = [
@@ -38,7 +38,7 @@ const LinkItems = [
     {name: 'Settings', route: '/dashboard/settings', icon: FiSettings},
 ];
 
-export default function SidebarWithHeader({children}) {
+export default function Sidebar({children}) {
     const {isOpen, onOpen, onClose} = useDisclosure();
     return (
         <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>

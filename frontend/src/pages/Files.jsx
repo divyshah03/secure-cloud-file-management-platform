@@ -18,12 +18,12 @@ import {
     AlertIcon
 } from '@chakra-ui/react';
 import { AddIcon, RepeatIcon } from '@chakra-ui/icons';
-import SidebarWithHeader from '../../components/layout/SideBar.jsx';
+import Sidebar from '../components/layout/Sidebar.jsx';
 import { useEffect, useState } from 'react';
-import { getFiles, deleteFile, downloadFileAsBlob, getFileStats } from '../../api/client.js';
-import FileCard from '../../components/file/FileCard.jsx';
-import FileUpload from '../../components/file/FileUpload.jsx';
-import { errorNotification, successNotification } from '../../utils/notification.js';
+import { getFiles, deleteFile, downloadFileAsBlob, getFileStats } from '../api/client.js';
+import FileCard from '../components/file/FileCard.jsx';
+import FileUpload from '../components/file/FileUpload.jsx';
+import { errorNotification, successNotification } from '../utils/notification.js';
 
 const Files = () => {
     const [files, setFiles] = useState([]);
@@ -113,7 +113,7 @@ const Files = () => {
 
     if (loading && files.length === 0) {
         return (
-            <SidebarWithHeader>
+            <Sidebar>
                 <Flex justify="center" align="center" minH="400px">
                     <Spinner
                         thickness='4px'
@@ -123,12 +123,12 @@ const Files = () => {
                         size='xl'
                     />
                 </Flex>
-            </SidebarWithHeader>
+            </Sidebar>
         );
     }
 
     return (
-        <SidebarWithHeader>
+        <Sidebar>
             <Container maxW="container.xl" py={8}>
                 <Flex justify="space-between" align="center" mb={6}>
                     <Heading size="lg">My Files</Heading>
@@ -213,7 +213,7 @@ const Files = () => {
                     onSuccess={handleFileUploaded}
                 />
             </Container>
-        </SidebarWithHeader>
+        </Sidebar>
     );
 };
 

@@ -3,13 +3,13 @@ import ReactDOM from 'react-dom/client';
 import { ChakraProvider } from '@chakra-ui/react';
 import { createStandaloneToast } from '@chakra-ui/toast';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Login from './pages/auth/login/Login.jsx';
-import Signup from './pages/auth/signup/Signup.jsx';
-import EmailVerification from './pages/auth/email-verification/EmailVerification.jsx';
-import AuthProvider from './hooks/AuthContext.jsx';
+import Login from './pages/Login.jsx';
+import Signup from './pages/Signup.jsx';
+import EmailVerification from './pages/EmailVerification.jsx';
+import AuthProvider from './context/AuthProvider.jsx';
 import ProtectedRoute from './components/layout/ProtectedRoute.jsx';
-import Home from './pages/files/Home.jsx';
-import Files from './pages/files/Files.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import Files from './pages/Files.jsx';
 
 const { ToastContainer } = createStandaloneToast();
 
@@ -32,7 +32,7 @@ const router = createBrowserRouter([
     },
     {
         path: '/dashboard',
-        element: <ProtectedRoute><Home /></ProtectedRoute>
+        element: <ProtectedRoute><Dashboard /></ProtectedRoute>
     },
     {
         path: '/dashboard/files',

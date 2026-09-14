@@ -12,14 +12,14 @@ import {
     Flex,
     useDisclosure
 } from '@chakra-ui/react';
-import SidebarWithHeader from '../../components/layout/SideBar.jsx';
+import Sidebar from '../components/layout/Sidebar.jsx';
 import { useEffect, useState } from 'react';
-import { getFileStats, getFiles } from '../../api/client.js';
-import { errorNotification } from '../../utils/notification.js';
+import { getFileStats, getFiles } from '../api/client.js';
+import { errorNotification } from '../utils/notification.js';
 import { useNavigate } from 'react-router-dom';
 import { AddIcon } from '@chakra-ui/icons';
 
-const Home = () => {
+const Dashboard = () => {
     const [stats, setStats] = useState({ fileCount: 0, totalSize: 0, totalSizeMB: "0.00" });
     const [recentFiles, setRecentFiles] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -60,7 +60,7 @@ const Home = () => {
     };
 
     return (
-        <SidebarWithHeader>
+        <Sidebar>
             <Container maxW="container.xl" py={8}>
                 <Flex justify="space-between" align="center" mb={6}>
                     <Heading size="lg">Dashboard</Heading>
@@ -183,8 +183,8 @@ const Home = () => {
                     </Box>
                 )}
             </Container>
-        </SidebarWithHeader>
+        </Sidebar>
     );
 };
 
-export default Home;
+export default Dashboard;

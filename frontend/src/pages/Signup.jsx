@@ -1,23 +1,11 @@
-import {
-    Alert,
-    AlertIcon,
-    Box,
-    Button,
-    Flex,
-    FormLabel,
-    Heading,
-    Image,
-    Input,
-    Link,
-    Stack,
-    Text,
-} from '@chakra-ui/react';
-import {Formik, Form, useField} from "formik";
+import { useAuth } from '../context/AuthProvider.jsx';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Flex, Heading, Image, Link, Stack, Text, Box, Button, FormLabel, Input, Alert, AlertIcon } from '@chakra-ui/react';
+import { Formik, Form, useField } from 'formik';
 import * as Yup from 'yup';
-import { useAuth } from '../../../hooks/AuthContext.jsx';
-import { errorNotification, successNotification } from '../../../utils/notification.js';
-import {useNavigate} from "react-router-dom";
-import {useEffect} from "react";
+import { register } from '../api/client.js';
+import { errorNotification, successNotification } from '../utils/notification.js';
 
 const MyTextInput = ({label, ...props}) => {
     const [field, meta] = useField(props);
@@ -35,8 +23,7 @@ const MyTextInput = ({label, ...props}) => {
     );
 };
 
-const LoginForm = () => {
-    const { login } = useAuth();
+const RegistrationForm = ({onSuccess}) => {
     const navigate = useNavigate();
 
     return (
@@ -44,28 +31,42 @@ const LoginForm = () => {
             validateOnMount={true}
             validationSchema={
                 Yup.object({
+                    name: Yup.string()
+                        .min(2, "Name must be at least 2 characters")
+                        .max(100, "Name must be less than 100 characters")
+                        .required("Name is required"),
                     email: Yup.string()
                         .email("Must be valid email")
                         .required("Email is required"),
                     password: Yup.string()
                         .min(8, "Password must be at least 8 characters")
-                        .required("Password is required")
+                        .max(100, "Password must be less than 100 characters")
+                        .required("Password is required"),
+                    confirmPassword: Yup.string()
+                        .oneOf([Yup.ref('password'), null], "Passwords must match")
+                        .required("Please confirm your password")
                 })
             }
-            initialValues={{email: '', password: ''}}
+            initialValues={{name: '', email: '', password: '', confirmPassword: ''}}
             onSubmit={(values, {setSubmitting}) => {
                 setSubmitting(true);
-                login({
+                register({
+                    name: values.name,
                     email: values.email,
                     password: values.password
-                }).then(res => {
-                    successNotification("Success", "Logged in successfully");
-                    navigate("/dashboard");
+                }).then(() => {
+                    successNotification(
+                        "Registration Successful",
+                        "Please check your email to verify your account before logging in."
+                    );
+                    setTimeout(() => {
+                        navigate("/login");
+                    }, 2000);
                 }).catch(err => {
                     const errorMessage = err.response?.data?.message || 
                                        err.response?.data?.error || 
                                        err.message || 
-                                       "Login failed. Please check your credentials.";
+                                       "Registration failed. Please try again.";
                     errorNotification(
                         err.response?.status || "Error",
                         errorMessage
@@ -79,6 +80,12 @@ const LoginForm = () => {
                 <Form>
                     <Stack mt={15} spacing={15}>
                         <MyTextInput
+                            label={"Full Name"}
+                            name={"name"}
+                            type={"text"}
+                            placeholder={"John Doe"}
+                        />
+                        <MyTextInput
                             label={"Email"}
                             name={"email"}
                             type={"email"}
@@ -88,7 +95,13 @@ const LoginForm = () => {
                             label={"Password"}
                             name={"password"}
                             type={"password"}
-                            placeholder={"Enter your password"}
+                            placeholder={"Minimum 8 characters"}
+                        />
+                        <MyTextInput
+                            label={"Confirm Password"}
+                            name={"confirmPassword"}
+                            type={"password"}
+                            placeholder={"Re-enter your password"}
                         />
 
                         <Button
@@ -96,7 +109,7 @@ const LoginForm = () => {
                             disabled={!isValid || isSubmitting}
                             colorScheme="blue"
                             isLoading={isSubmitting}>
-                            Login
+                            Sign Up
                         </Button>
                     </Stack>
                 </Form>
@@ -105,7 +118,7 @@ const LoginForm = () => {
     );
 };
 
-const Login = () => {
+const Signup = () => {
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
@@ -125,10 +138,10 @@ const Login = () => {
                         alt={"Logo"}
                         alignSelf={"center"}
                     />
-                    <Heading fontSize={'2xl'} mb={15}>Sign in to Cloud File Manager</Heading>
-                    <LoginForm/>
-                    <Link color={"blue.500"} href={"/signup"}>
-                        Don't have an account? Sign up now.
+                    <Heading fontSize={'2xl'} mb={15}>Create your account</Heading>
+                    <RegistrationForm/>
+                    <Link color={"blue.500"} href={"/"}>
+                        Already have an account? Login now.
                     </Link>
                 </Stack>
             </Flex>
@@ -144,11 +157,11 @@ const Login = () => {
                     Cloud File Manager
                 </Text>
                 <Text fontSize={"xl"} color={'white'} textAlign="center">
-                    Securely upload, manage, and organize your files
+                    Secure file storage and management made easy
                 </Text>
             </Flex>
         </Stack>
     );
 };
 
-export default Login;
+export default Signup;

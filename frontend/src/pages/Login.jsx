@@ -1,11 +1,23 @@
-import { useAuth } from '../../../hooks/AuthContext.jsx';
-import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import { Flex, Heading, Image, Link, Stack, Text, Box, Button, FormLabel, Input, Alert, AlertIcon } from '@chakra-ui/react';
-import { Formik, Form, useField } from 'formik';
+import {
+    Alert,
+    AlertIcon,
+    Box,
+    Button,
+    Flex,
+    FormLabel,
+    Heading,
+    Image,
+    Input,
+    Link,
+    Stack,
+    Text,
+} from '@chakra-ui/react';
+import {Formik, Form, useField} from "formik";
 import * as Yup from 'yup';
-import { register } from '../../../api/client.js';
-import { errorNotification, successNotification } from '../../../utils/notification.js';
+import { useAuth } from '../context/AuthProvider.jsx';
+import { errorNotification, successNotification } from '../utils/notification.js';
+import {useNavigate} from "react-router-dom";
+import {useEffect} from "react";
 
 const MyTextInput = ({label, ...props}) => {
     const [field, meta] = useField(props);
@@ -23,7 +35,8 @@ const MyTextInput = ({label, ...props}) => {
     );
 };
 
-const RegistrationForm = ({onSuccess}) => {
+const LoginForm = () => {
+    const { login } = useAuth();
     const navigate = useNavigate();
 
     return (
@@ -31,42 +44,28 @@ const RegistrationForm = ({onSuccess}) => {
             validateOnMount={true}
             validationSchema={
                 Yup.object({
-                    name: Yup.string()
-                        .min(2, "Name must be at least 2 characters")
-                        .max(100, "Name must be less than 100 characters")
-                        .required("Name is required"),
                     email: Yup.string()
                         .email("Must be valid email")
                         .required("Email is required"),
                     password: Yup.string()
                         .min(8, "Password must be at least 8 characters")
-                        .max(100, "Password must be less than 100 characters")
-                        .required("Password is required"),
-                    confirmPassword: Yup.string()
-                        .oneOf([Yup.ref('password'), null], "Passwords must match")
-                        .required("Please confirm your password")
+                        .required("Password is required")
                 })
             }
-            initialValues={{name: '', email: '', password: '', confirmPassword: ''}}
+            initialValues={{email: '', password: ''}}
             onSubmit={(values, {setSubmitting}) => {
                 setSubmitting(true);
-                register({
-                    name: values.name,
+                login({
                     email: values.email,
                     password: values.password
-                }).then(() => {
-                    successNotification(
-                        "Registration Successful",
-                        "Please check your email to verify your account before logging in."
-                    );
-                    setTimeout(() => {
-                        navigate("/login");
-                    }, 2000);
+                }).then(res => {
+                    successNotification("Success", "Logged in successfully");
+                    navigate("/dashboard");
                 }).catch(err => {
                     const errorMessage = err.response?.data?.message || 
                                        err.response?.data?.error || 
                                        err.message || 
-                                       "Registration failed. Please try again.";
+                                       "Login failed. Please check your credentials.";
                     errorNotification(
                         err.response?.status || "Error",
                         errorMessage
@@ -80,12 +79,6 @@ const RegistrationForm = ({onSuccess}) => {
                 <Form>
                     <Stack mt={15} spacing={15}>
                         <MyTextInput
-                            label={"Full Name"}
-                            name={"name"}
-                            type={"text"}
-                            placeholder={"John Doe"}
-                        />
-                        <MyTextInput
                             label={"Email"}
                             name={"email"}
                             type={"email"}
@@ -95,13 +88,7 @@ const RegistrationForm = ({onSuccess}) => {
                             label={"Password"}
                             name={"password"}
                             type={"password"}
-                            placeholder={"Minimum 8 characters"}
-                        />
-                        <MyTextInput
-                            label={"Confirm Password"}
-                            name={"confirmPassword"}
-                            type={"password"}
-                            placeholder={"Re-enter your password"}
+                            placeholder={"Enter your password"}
                         />
 
                         <Button
@@ -109,7 +96,7 @@ const RegistrationForm = ({onSuccess}) => {
                             disabled={!isValid || isSubmitting}
                             colorScheme="blue"
                             isLoading={isSubmitting}>
-                            Sign Up
+                            Login
                         </Button>
                     </Stack>
                 </Form>
@@ -118,7 +105,7 @@ const RegistrationForm = ({onSuccess}) => {
     );
 };
 
-const Signup = () => {
+const Login = () => {
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
@@ -138,10 +125,10 @@ const Signup = () => {
                         alt={"Logo"}
                         alignSelf={"center"}
                     />
-                    <Heading fontSize={'2xl'} mb={15}>Create your account</Heading>
-                    <RegistrationForm/>
-                    <Link color={"blue.500"} href={"/"}>
-                        Already have an account? Login now.
+                    <Heading fontSize={'2xl'} mb={15}>Sign in to Cloud File Manager</Heading>
+                    <LoginForm/>
+                    <Link color={"blue.500"} href={"/signup"}>
+                        Don't have an account? Sign up now.
                     </Link>
                 </Stack>
             </Flex>
@@ -157,11 +144,11 @@ const Signup = () => {
                     Cloud File Manager
                 </Text>
                 <Text fontSize={"xl"} color={'white'} textAlign="center">
-                    Secure file storage and management made easy
+                    Securely upload, manage, and organize your files
                 </Text>
             </Flex>
         </Stack>
     );
 };
 
-export default Signup;
+export default Login;

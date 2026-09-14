@@ -17,8 +17,8 @@ import {
     Spinner,
     Flex
 } from '@chakra-ui/react';
-import { verifyEmail, verifyEmailPost, resendVerificationEmail } from '../../../api/client.js';
-import { errorNotification, successNotification } from '../../../utils/notification.js';
+import { verifyEmail, verifyEmailPost, resendVerificationEmail } from '../api/client.js';
+import { errorNotification, successNotification } from '../utils/notification.js';
 
 const EmailVerification = () => {
     const [searchParams] = useSearchParams();
