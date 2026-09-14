@@ -1,39 +1,19 @@
 import {
-    Alert,
-    AlertIcon,
-    Box,
     Button,
     Flex,
-    FormLabel,
     Heading,
     Image,
-    Input,
     Link,
     Stack,
     Text,
 } from '@chakra-ui/react';
-import {Formik, Form, useField} from "formik";
+import {Formik, Form} from "formik";
 import * as Yup from 'yup';
 import { useAuth } from '../AuthProvider.jsx';
 import { errorNotification, successNotification } from '../notification.js';
 import {useNavigate, Link as RouterLink} from "react-router-dom";
 import {useEffect} from "react";
-
-const MyTextInput = ({label, ...props}) => {
-    const [field, meta] = useField(props);
-    return (
-        <Box>
-            <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
-            <Input className="text-input" {...field} {...props} />
-            {meta.touched && meta.error ? (
-                <Alert className="error" status={"error"} mt={2}>
-                    <AlertIcon/>
-                    {meta.error}
-                </Alert>
-            ) : null}
-        </Box>
-    );
-};
+import FormTextInput from '../components/forms/FormTextInput.jsx';
 
 const LoginForm = () => {
     const { login } = useAuth();
@@ -78,13 +58,13 @@ const LoginForm = () => {
             {({isValid, isSubmitting}) => (
                 <Form>
                     <Stack mt={15} spacing={15}>
-                        <MyTextInput
+                        <FormTextInput
                             label={"Email"}
                             name={"email"}
                             type={"email"}
                             placeholder={"you@example.com"}
                         />
-                        <MyTextInput
+                        <FormTextInput
                             label={"Password"}
                             name={"password"}
                             type={"password"}

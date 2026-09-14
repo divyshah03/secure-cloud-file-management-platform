@@ -1,27 +1,12 @@
 import { useAuth } from '../AuthProvider.jsx';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Flex, Heading, Image, Link, Stack, Text, Box, Button, FormLabel, Input, Alert, AlertIcon } from '@chakra-ui/react';
-import { Formik, Form, useField } from 'formik';
+import { Flex, Heading, Image, Link, Stack, Text, Button } from '@chakra-ui/react';
+import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { register } from '../api/client.js';
 import { errorNotification, successNotification } from '../notification.js';
-
-const MyTextInput = ({label, ...props}) => {
-    const [field, meta] = useField(props);
-    return (
-        <Box>
-            <FormLabel htmlFor={props.id || props.name}>{label}</FormLabel>
-            <Input className="text-input" {...field} {...props} />
-            {meta.touched && meta.error ? (
-                <Alert className="error" status={"error"} mt={2}>
-                    <AlertIcon/>
-                    {meta.error}
-                </Alert>
-            ) : null}
-        </Box>
-    );
-};
+import FormTextInput from '../components/forms/FormTextInput.jsx';
 
 const RegistrationForm = ({onSuccess}) => {
     const navigate = useNavigate();
@@ -79,25 +64,25 @@ const RegistrationForm = ({onSuccess}) => {
             {({isValid, isSubmitting}) => (
                 <Form>
                     <Stack mt={15} spacing={15}>
-                        <MyTextInput
+                        <FormTextInput
                             label={"Full Name"}
                             name={"name"}
                             type={"text"}
                             placeholder={"John Doe"}
                         />
-                        <MyTextInput
+                        <FormTextInput
                             label={"Email"}
                             name={"email"}
                             type={"email"}
                             placeholder={"you@example.com"}
                         />
-                        <MyTextInput
+                        <FormTextInput
                             label={"Password"}
                             name={"password"}
                             type={"password"}
                             placeholder={"Minimum 8 characters"}
                         />
-                        <MyTextInput
+                        <FormTextInput
                             label={"Confirm Password"}
                             name={"confirmPassword"}
                             type={"password"}
