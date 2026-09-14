@@ -15,11 +15,19 @@ import {
     IconButton,
     Tooltip,
     Alert,
-    AlertIcon
+    AlertIcon,
+    Select,
+    HStack,
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogContent,
+    AlertDialogOverlay
 } from '@chakra-ui/react';
 import { AddIcon, RepeatIcon } from '@chakra-ui/icons';
 import Sidebar from '../components/layout/Sidebar.jsx';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getFiles, deleteFile, downloadFileAsBlob, getFileStats } from '../api/client.js';
 import FileCard from '../components/file/FileCard.jsx';
 import FileUpload from '../components/file/FileUpload.jsx';
@@ -32,8 +40,16 @@ const Files = () => {
     const [stats, setStats] = useState({ fileCount: 0, totalSize: 0, totalSizeMB: "0.00" });
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [page, setPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
     const [sortBy, setSortBy] = useState('createdAt');
     const [sortDir, setSortDir] = useState('DESC');
+    const {
+        isOpen: isDeleteOpen,
+        onOpen: onDeleteOpen,
+        onClose: onDeleteClose
+    } = useDisclosure();
+    const [fileToDelete, setFileToDelete] = useState(null);
+    const cancelRef = useRef();
 
     const fetchFiles = () => {
         setLoading(true);
@@ -41,6 +57,7 @@ const Files = () => {
         getFiles(page, 20, sortBy, sortDir)
             .then(res => {
                 setFiles(res.data.content || res.data);
+                setTotalPages(res.data.totalPages ?? 0);
             })
             .catch(err => {
                 const errorMessage = err.response?.data?.message || 
@@ -81,20 +98,27 @@ const Files = () => {
         successNotification("Success", "File uploaded successfully");
     };
 
-    const handleDeleteFile = async (fileId, fileName) => {
-        if (window.confirm(`Are you sure you want to delete "${fileName}"?`)) {
-            try {
-                await deleteFile(fileId);
-                successNotification("Success", "File deleted successfully");
-                fetchFiles();
-                fetchStats();
-            } catch (err) {
-                const errorMessage = err.response?.data?.message || 
-                                   err.response?.data?.error || 
-                                   err.message || 
-                                   "Failed to delete file";
-                errorNotification("Error", errorMessage);
-            }
+    const handleDeleteFile = (fileId, fileName) => {
+        setFileToDelete({ id: fileId, name: fileName });
+        onDeleteOpen();
+    };
+
+    const confirmDeleteFile = async () => {
+        if (!fileToDelete) return;
+        try {
+            await deleteFile(fileToDelete.id);
+            successNotification("Success", "File deleted successfully");
+            fetchFiles();
+            fetchStats();
+        } catch (err) {
+            const errorMessage = err.response?.data?.message ||
+                               err.response?.data?.error ||
+                               err.message ||
+                               "Failed to delete file";
+            errorNotification("Error", errorMessage);
+        } finally {
+            onDeleteClose();
+            setFileToDelete(null);
         }
     };
 
@@ -153,7 +177,6 @@ const Files = () => {
                     </Flex>
                 </Flex>
 
-                {/* Statistics */}
                 <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={6}>
                     <Stat>
                         <StatLabel>Total Files</StatLabel>
@@ -169,6 +192,34 @@ const Files = () => {
                         <StatNumber>{files.length}</StatNumber>
                     </Stat>
                 </SimpleGrid>
+
+                <HStack spacing={4} mb={6} flexWrap="wrap">
+                    <Select
+                        maxW="220px"
+                        value={sortBy}
+                        onChange={(e) => {
+                            setSortBy(e.target.value);
+                            setPage(0);
+                        }}
+                        aria-label="Sort by"
+                    >
+                        <option value="createdAt">Sort by date</option>
+                        <option value="originalFileName">Sort by name</option>
+                        <option value="fileSize">Sort by size</option>
+                    </Select>
+                    <Select
+                        maxW="160px"
+                        value={sortDir}
+                        onChange={(e) => {
+                            setSortDir(e.target.value);
+                            setPage(0);
+                        }}
+                        aria-label="Sort direction"
+                    >
+                        <option value="DESC">Descending</option>
+                        <option value="ASC">Ascending</option>
+                    </Select>
+                </HStack>
 
                 {error && (
                     <Alert status="error" mb={4} borderRadius="md">
@@ -206,12 +257,56 @@ const Files = () => {
                     </SimpleGrid>
                 )}
 
-                {/* File Upload Modal */}
+                {totalPages > 1 && (
+                    <Flex justify="center" align="center" gap={4} mt={8}>
+                        <Button
+                            onClick={() => setPage((p) => Math.max(0, p - 1))}
+                            isDisabled={page === 0 || loading}
+                        >
+                            Previous
+                        </Button>
+                        <Text fontSize="sm">
+                            Page {page + 1} of {totalPages}
+                        </Text>
+                        <Button
+                            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                            isDisabled={page >= totalPages - 1 || loading}
+                        >
+                            Next
+                        </Button>
+                    </Flex>
+                )}
+
                 <FileUpload
                     isOpen={isOpen}
                     onClose={onClose}
                     onSuccess={handleFileUploaded}
                 />
+
+                <AlertDialog
+                    isOpen={isDeleteOpen}
+                    leastDestructiveRef={cancelRef}
+                    onClose={onDeleteClose}
+                >
+                    <AlertDialogOverlay>
+                        <AlertDialogContent>
+                            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                                Delete File
+                            </AlertDialogHeader>
+                            <AlertDialogBody>
+                                Are you sure you want to delete "{fileToDelete?.name}"? This cannot be undone.
+                            </AlertDialogBody>
+                            <AlertDialogFooter>
+                                <Button ref={cancelRef} onClick={onDeleteClose}>
+                                    Cancel
+                                </Button>
+                                <Button colorScheme="red" onClick={confirmDeleteFile} ml={3}>
+                                    Delete
+                                </Button>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialogOverlay>
+                </AlertDialog>
             </Container>
         </Sidebar>
     );
