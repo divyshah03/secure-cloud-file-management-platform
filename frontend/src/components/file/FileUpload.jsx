@@ -75,20 +75,7 @@ export default function FileUpload({ isOpen, onClose, onSuccess }) {
         setUploadProgress(0);
 
         try {
-            // Simulate progress (since we can't track actual upload progress easily with axios)
-            const progressInterval = setInterval(() => {
-                setUploadProgress(prev => {
-                    if (prev >= 90) {
-                        clearInterval(progressInterval);
-                        return 90;
-                    }
-                    return prev + 10;
-                });
-            }, 200);
-
-            await uploadFile(selectedFile);
-            
-            clearInterval(progressInterval);
+            await uploadFile(selectedFile, (progress) => setUploadProgress(progress));
             setUploadProgress(100);
             
             successNotification("Success", "File uploaded successfully!");
@@ -98,7 +85,6 @@ export default function FileUpload({ isOpen, onClose, onSuccess }) {
                 if (onSuccess) onSuccess();
             }, 500);
         } catch (err) {
-            clearInterval(progressInterval);
             const errorMessage = err.response?.data?.message || 
                                err.response?.data?.error || 
                                err.message || 
