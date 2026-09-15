@@ -10,6 +10,7 @@ public record FileDto(
         String contentType,
         String downloadUrl,
         LocalDateTime createdAt,
-        Long ownerId
+        Long ownerId,
+        String role
 ) {
 }
