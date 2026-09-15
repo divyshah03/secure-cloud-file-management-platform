@@ -19,7 +19,7 @@ import {
     IconButton
 } from '@chakra-ui/react';
 import { useDropzone } from 'react-dropzone';
-import { uploadFile } from '../../api/client.js';
+import { uploadFileDirect } from '../../api/client.js';
 import { errorNotification, successNotification } from '../../notification.js';
 import { FiUpload, FiFile, FiX } from 'react-icons/fi';
 import { formatFileSize } from '../../utils/formatFileSize.js';
@@ -68,7 +68,7 @@ export default function FileUpload({ isOpen, onClose, onSuccess }) {
         setUploadProgress(0);
 
         try {
-            await uploadFile(selectedFile, (progress) => setUploadProgress(progress));
+            await uploadFileDirect(selectedFile, (progress) => setUploadProgress(progress));
             setUploadProgress(100);
             
             successNotification("Success", "File uploaded successfully!");
