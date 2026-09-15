@@ -9,19 +9,31 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.io.IOException;
+import java.net.URI;
+import java.time.Duration;
+import java.util.Optional;
 
 @Service
 public class S3Service {
 
     private static final Logger logger = LoggerFactory.getLogger(S3Service.class);
     private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
 
-    public S3Service(S3Client s3Client) {
+    public S3Service(S3Client s3Client, S3Presigner s3Presigner) {
         this.s3Client = s3Client;
+        this.s3Presigner = s3Presigner;
     }
 
     public void putObject(String bucketName, String key, byte[] file) {
@@ -62,6 +74,52 @@ public class S3Service {
             logger.error("Unexpected error retrieving file from S3: {}/{}", bucketName, key, e);
             throw new RuntimeException("Failed to retrieve file from S3", e);
         }
+    }
+
+    public Optional<Long> headObject(String bucketName, String key) {
+        try {
+            HeadObjectResponse response = s3Client.headObject(
+                    HeadObjectRequest.builder().bucket(bucketName).key(key).build());
+            return Optional.of(response.contentLength());
+        } catch (NoSuchKeyException e) {
+            return Optional.empty();
+        } catch (Exception e) {
+            logger.error("Failed to head object in S3: {}/{}", bucketName, key, e);
+            throw new RuntimeException("Failed to check object in S3", e);
+        }
+    }
+
+    public URI presignPutObject(String bucketName, String key, String contentType, Duration expiry) {
+        PutObjectRequest objectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentType(contentType)
+                .build();
+
+        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+                .signatureDuration(expiry)
+                .putObjectRequest(objectRequest)
+                .build();
+
+        PresignedPutObjectRequest presigned = s3Presigner.presignPutObject(presignRequest);
+        return URI.create(presigned.url().toString());
+    }
+
+    public URI presignGetObject(String bucketName, String key, String responseContentDisposition, Duration expiry) {
+        GetObjectRequest.Builder getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key);
+        if (responseContentDisposition != null) {
+            getObjectRequest.responseContentDisposition(responseContentDisposition);
+        }
+
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(expiry)
+                .getObjectRequest(getObjectRequest.build())
+                .build();
+
+        PresignedGetObjectRequest presigned = s3Presigner.presignGetObject(presignRequest);
+        return URI.create(presigned.url().toString());
     }
 
     public void deleteObject(String bucketName, String key) {
