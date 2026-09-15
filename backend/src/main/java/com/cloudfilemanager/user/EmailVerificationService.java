@@ -2,6 +2,8 @@ package com.cloudfilemanager.user;
 
 import com.cloudfilemanager.email.EmailService;
 import com.cloudfilemanager.common.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,8 @@ import java.util.UUID;
 
 @Service
 public class EmailVerificationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(EmailVerificationService.class);
 
     private final UserRepository userRepository;
     private final EmailService emailService;
@@ -35,8 +39,13 @@ public class EmailVerificationService {
         user.setEmailVerificationToken(token);
         user.setEmailVerificationTokenExpiresAt(expirationTime);
         userRepository.save(user);
-        
-        emailService.sendVerificationEmail(user.getEmail(), user.getName(), token);
+
+        try {
+            emailService.sendVerificationEmail(user.getEmail(), user.getName(), token);
+        } catch (Exception e) {
+            logger.error("Failed to send verification email to {}; token was still generated and can be resent",
+                    user.getEmail(), e);
+        }
     }
 
     @Transactional
