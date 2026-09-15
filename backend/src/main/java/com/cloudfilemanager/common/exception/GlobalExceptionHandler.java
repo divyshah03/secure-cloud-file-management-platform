@@ -6,7 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import com.cloudfilemanager.malware.MalwareDetectedException;
+import com.cloudfilemanager.malware.MalwareScanUnavailableException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -33,6 +36,45 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
         return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MalwareDetectedException.class)
+    public ResponseEntity<ApiError> handleMalwareDetectedException(
+            MalwareDetectedException e, HttpServletRequest request) {
+        logger.warn("Malware detected: {}", e.getMessage());
+        ApiError apiError = new ApiError(
+                request.getRequestURI(),
+                e.getMessage(),
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(apiError, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler(MalwareScanUnavailableException.class)
+    public ResponseEntity<ApiError> handleMalwareScanUnavailableException(
+            MalwareScanUnavailableException e, HttpServletRequest request) {
+        logger.error("Malware scanner unavailable: {}", e.getMessage());
+        ApiError apiError = new ApiError(
+                request.getRequestURI(),
+                e.getMessage(),
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(apiError, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<ApiError> handleForbiddenOperationException(
+            ForbiddenOperationException e, HttpServletRequest request) {
+        logger.warn("Forbidden operation: {}", e.getMessage());
+        ApiError apiError = new ApiError(
+                request.getRequestURI(),
+                e.getMessage(),
+                HttpStatus.FORBIDDEN.value(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(DuplicateResourceException.class)
@@ -101,6 +143,19 @@ public class GlobalExceptionHandler {
         ApiError apiError = new ApiError(
                 request.getRequestURI(),
                 "Authentication required",
+                HttpStatus.FORBIDDEN.value(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(apiError, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ApiError> handleDisabledException(
+            DisabledException e, HttpServletRequest request) {
+        logger.warn("Login attempt with disabled account: {}", e.getMessage());
+        ApiError apiError = new ApiError(
+                request.getRequestURI(),
+                "Email not verified. Please verify your email before logging in.",
                 HttpStatus.FORBIDDEN.value(),
                 LocalDateTime.now()
         );
