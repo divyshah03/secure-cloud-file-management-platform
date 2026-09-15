@@ -27,7 +27,8 @@ import {
     FiHome,
     FiMenu,
     FiSettings,
-    FiFile
+    FiFile,
+    FiActivity
 } from 'react-icons/fi';
 import { useAuth } from '../../AuthProvider.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -35,6 +36,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const LinkItems = [
     {name: 'Dashboard', route: '/dashboard', icon: FiHome},
     {name: 'My Files', route: '/dashboard/files', icon: FiFile},
+    {name: 'Activity', route: '/dashboard/activity', icon: FiActivity},
     {name: 'Settings', route: '/dashboard/settings', icon: FiSettings},
 ];
 
