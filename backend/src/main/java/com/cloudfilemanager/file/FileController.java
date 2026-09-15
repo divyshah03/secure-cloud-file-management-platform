@@ -3,6 +3,17 @@ package com.cloudfilemanager.file;
 import com.cloudfilemanager.user.User;
 import com.cloudfilemanager.file.dto.FileDto;
 import com.cloudfilemanager.file.dto.FileUploadResponse;
+import com.cloudfilemanager.file.dto.PresignedDownloadResponse;
+import com.cloudfilemanager.file.dto.PresignedUploadCompleteRequest;
+import com.cloudfilemanager.file.dto.PresignedUploadRequest;
+import com.cloudfilemanager.file.dto.PresignedUploadResponse;
+import com.cloudfilemanager.file.sharing.FilePermissionService;
+import com.cloudfilemanager.file.sharing.ShareLinkService;
+import com.cloudfilemanager.file.sharing.dto.CreateShareLinkRequest;
+import com.cloudfilemanager.file.sharing.dto.FilePermissionDto;
+import com.cloudfilemanager.file.sharing.dto.FileShareLinkDto;
+import com.cloudfilemanager.file.sharing.dto.GrantPermissionRequest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.core.io.ByteArrayResource;
@@ -28,9 +39,16 @@ import java.util.Map;
 public class FileController {
 
     private final FileService fileService;
+    private final FilePermissionService filePermissionService;
+    private final ShareLinkService shareLinkService;
 
-    public FileController(FileService fileService) {
+    public FileController(
+            FileService fileService,
+            FilePermissionService filePermissionService,
+            ShareLinkService shareLinkService) {
         this.fileService = fileService;
+        this.filePermissionService = filePermissionService;
+        this.shareLinkService = shareLinkService;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -41,6 +59,33 @@ public class FileController {
         
         FileUploadResponse response = fileService.uploadFile(file, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    // ---- Presigned S3 URL flow (direct browser <-> S3, bypassing backend for bytes) ----
+
+    @PostMapping("/presigned-upload")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<PresignedUploadResponse> createPresignedUpload(
+            @Valid @RequestBody PresignedUploadRequest request,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(fileService.createPresignedUpload(request, user));
+    }
+
+    @PostMapping("/presigned-upload/complete")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<FileUploadResponse> completePresignedUpload(
+            @Valid @RequestBody PresignedUploadCompleteRequest request,
+            @AuthenticationPrincipal User user) {
+        FileUploadResponse response = fileService.completePresignedUpload(request, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{fileId}/presigned-download")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<PresignedDownloadResponse> createPresignedDownload(
+            @PathVariable Long fileId,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(fileService.createPresignedDownload(fileId, user));
     }
 
     @GetMapping
@@ -65,6 +110,13 @@ public class FileController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<FileDto>> getAllUserFiles(@AuthenticationPrincipal User user) {
         List<FileDto> files = fileService.getAllUserFiles(user);
+        return ResponseEntity.ok(files);
+    }
+
+    @GetMapping("/shared-with-me")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<FileDto>> getFilesSharedWithMe(@AuthenticationPrincipal User user) {
+        List<FileDto> files = fileService.getFilesSharedWithMe(user);
         return ResponseEntity.ok(files);
     }
 
@@ -110,11 +162,71 @@ public class FileController {
     public ResponseEntity<Map<String, Object>> getFileStats(@AuthenticationPrincipal User user) {
         long fileCount = fileService.getUserFileCount(user);
         long totalSize = fileService.getUserTotalFileSize(user);
-        
+
         return ResponseEntity.ok(Map.of(
                 "fileCount", fileCount,
                 "totalSize", totalSize,
                 "totalSizeMB", String.format("%.2f", totalSize / (1024.0 * 1024.0))
         ));
+    }
+
+    // ---- Collaborator permissions (owner-only) ----
+
+    @GetMapping("/{fileId}/permissions")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<FilePermissionDto>> listPermissions(
+            @PathVariable Long fileId,
+            @AuthenticationPrincipal User owner) {
+        return ResponseEntity.ok(filePermissionService.listPermissions(fileId, owner));
+    }
+
+    @PostMapping("/{fileId}/permissions")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<FilePermissionDto> grantPermission(
+            @PathVariable Long fileId,
+            @Valid @RequestBody GrantPermissionRequest request,
+            @AuthenticationPrincipal User owner) {
+        FilePermissionDto dto = filePermissionService.grantPermission(fileId, owner, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    }
+
+    @DeleteMapping("/{fileId}/permissions/{userId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Map<String, String>> revokePermission(
+            @PathVariable Long fileId,
+            @PathVariable Long userId,
+            @AuthenticationPrincipal User owner) {
+        filePermissionService.revokePermission(fileId, owner, userId);
+        return ResponseEntity.ok(Map.of("message", "Permission revoked successfully"));
+    }
+
+    // ---- Shareable links (owner-only to manage; redemption is public, see ShareController) ----
+
+    @GetMapping("/{fileId}/share-links")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<FileShareLinkDto>> listShareLinks(
+            @PathVariable Long fileId,
+            @AuthenticationPrincipal User owner) {
+        return ResponseEntity.ok(shareLinkService.listLinks(fileId, owner));
+    }
+
+    @PostMapping("/{fileId}/share-links")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<FileShareLinkDto> createShareLink(
+            @PathVariable Long fileId,
+            @Valid @RequestBody CreateShareLinkRequest request,
+            @AuthenticationPrincipal User owner) {
+        FileShareLinkDto dto = shareLinkService.createLink(fileId, owner, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    }
+
+    @DeleteMapping("/{fileId}/share-links/{linkId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Map<String, String>> revokeShareLink(
+            @PathVariable Long fileId,
+            @PathVariable Long linkId,
+            @AuthenticationPrincipal User owner) {
+        shareLinkService.revokeLink(fileId, owner, linkId);
+        return ResponseEntity.ok(Map.of("message", "Share link revoked successfully"));
     }
 }
