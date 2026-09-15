@@ -17,6 +17,10 @@ public class FileDtoMapper implements Function<File, FileDto> {
 
     @Override
     public FileDto apply(File file) {
+        return toDto(file, "OWNER");
+    }
+
+    public FileDto toDto(File file, String role) {
         return new FileDto(
                 file.getId(),
                 file.getFileName(),
@@ -25,7 +29,8 @@ public class FileDtoMapper implements Function<File, FileDto> {
                 file.getContentType(),
                 baseUrl + "/" + file.getId() + "/download",
                 file.getCreatedAt(),
-                file.getOwner().getId()
+                file.getOwner().getId(),
+                role
         );
     }
 }
