@@ -1,6 +1,6 @@
 # Secure Cloud File Management Platform — TODO
 
-Spring Boot + React + PostgreSQL + AWS S3 + JWT. Started from an Amigoscode tutorial
+Spring Boot + React + PostgreSQL + AWS S3 + JWT. Started from a publicly available starter
 template; repo/naming/structure cleanup already complete. This file tracks the pivot
 from "8 known bugs" to a real, differentiated, resume-honest project.
 
@@ -456,6 +456,74 @@ workaround; unrelated to any code in this repo).
 - [x] GitHub repo description updated via `gh repo edit` to match the current real feature
       set (was still describing the pre-RBAC/pre-presigned/pre-malware-scan state)
 
+## Phase 9 — Frontend UI Audit & Independent Re-Verification — DONE
+
+Requested as a follow-up skepticism check: Phase 2/3/5's `[x]` marks for frontend UI were
+based on this session's own earlier work, so this phase independently re-audited them
+against the actual current codebase (fresh `Read` calls, not memory) and then re-verified
+live via a **new**, from-scratch Playwright run with fresh accounts — not a rerun of an
+old script, a newly-written one targeting exactly the 4 items in question.
+
+**Step 1 — Codebase audit result: all 4 items EXIST**, not partial, not missing:
+
+| Item | Status | Evidence |
+|---|---|---|
+| (a) RBAC UI (view/manage collaborators, change role) | **EXISTS** | `frontend/src/components/file/ShareModal.jsx` — email+role form, collaborator list with role badges, revoke button; wired from `FileCard.jsx`'s Share icon (owner-only) via `Files.jsx` |
+| (b) Share-link UI (generate/copy/revoke) | **EXISTS** | Same `ShareModal.jsx` — role+expiry form, link list with Active/Expired/Revoked badges, copy-to-clipboard button, revoke button |
+| (c) Audit log UI | **EXISTS** | Per-file: "Recent activity" section inside `ShareModal.jsx`. Global: `frontend/src/pages/Activity.jsx` at `/dashboard/activity`, linked from `Sidebar.jsx` |
+| (d) Presigned transfer UI | **EXISTS** | `FileUpload.jsx` calls `uploadFileDirect` (progress bar wired to the real PUT's `onUploadProgress`); `Files.jsx` download calls `downloadFileDirect` — both in `api/client.js`, both confirmed calling the real presigned endpoints, not the legacy proxy ones, by grepping for every function name referenced to confirm no dangling/undefined imports |
+
+**Step 2 — Nothing to build.** All 4 items were already real, wired UI.
+
+**Step 3 — Live verification (new Playwright script, 2 fresh real accounts, real
+click-through, not API calls):**
+
+| # | Check | Result |
+|---|---|---|
+| 1 | ShareModal opens, "People with access" section renders | PASS |
+| 2 | Grant EDITOR role to a real second account via the UI form | PASS (201) |
+| 3 | Collaborator row + EDITOR badge appear in the UI list | PASS |
+| 4 | Revoke collaborator access via the UI's revoke button | PASS (200) |
+| 5 | Collaborator row disappears from the UI list after revoke | PASS |
+| 6 | Create a share link via the UI form | PASS (201) |
+| 7 | New link shows "Active" badge | PASS |
+| 8 | Copy-link button copies a real working `/share/...` URL to the clipboard (checked via `navigator.clipboard.readText()`) | PASS |
+| 9 | Revoke the share link via the UI | PASS (200) |
+| 10 | Link shows "Revoked" badge after revoke | PASS |
+| 11 | Per-file "Recent activity" section shows real entries in the modal | PASS |
+| 12 | Global "My Activity" page renders a table with real entries | PASS |
+| 13 | Uploading the real EICAR file through the drag-drop UI surfaces a visible error toast (not a silent failure) | PASS |
+| 14 | The rejected file does NOT appear as a card in the file grid afterward | PASS |
+
+**16/16 checks pass** (2 setup + 14 above). Three test-script bugs were found and fixed
+along the way (ambiguous Playwright text selectors colliding with the audit-log's own
+metadata text, e.g. `text=Revoked` matching both a status badge and an unrelated
+"PERMISSION_REVOKE" log line; the upload modal correctly staying open after a failed
+upload, which the first script version mis-read as a stale file-grid entry) — all were
+test-script issues, not application bugs; each is noted in this file's own history rather
+than silently fixed.
+
+**Step 4 — Full regression check:**
+- Backend: `mvn test` (JDK 17, `TestcontainersTest` excluded per the known DooD/Ryuk
+  networking limitation documented earlier) — **35/35 pass, BUILD SUCCESS**
+- Browser E2E smoke test (`e2e.js`, full register→verify→login→upload→list→download→
+  delete cycle): **8/8 pass**, zero CORS issues, zero unexpected console errors
+- One real, non-app finding along the way: `docker logs` (full history, no `--tail`) started
+  hitting Node's `execSync` buffer limit (`ENOBUFS`) partway through this phase, because
+  the backend's accumulated JSON log volume from the Phase 7 k6 load test (~27,500 HTTP
+  requests in one container lifetime) is now several MB. Fixed by tailing the last 500
+  lines instead of the full history in the test scripts — a test-harness fix, not an app
+  change, but worth noting since production log aggregation should assume similarly
+  unbounded volume and never rely on "dump everything" queries either.
+
+**Step 5 — This section.** No README changes were needed — the README's existing feature
+list and API table already accurately describe RBAC, share links, the audit log, and
+presigned transfer; this phase only added *evidence* that the frontend for each is real
+and working, which doesn't change what the README claims.
+
+No code was committed to git — this phase made no application code changes at all (nothing
+was missing to build), only test-script fixes in the scratchpad directory (outside the repo).
+
 ---
 
 ## False Claims — RESOLVED (now backed by real work as of Phase 2/7)
@@ -472,7 +540,17 @@ workaround; unrelated to any code in this repo).
 
 ## Notes / Open Questions
 
-- Docker startup prompt resolved as: run in foreground first (`docker compose up --build`,
-  attached) to watch build/startup logs directly before proceeding to verification steps.
-- Reconciliation of original 8-bug list vs. static audit is the current blocker —
-  everything in Phase 1 depends on it.
+All phases (0–9) are done and live-verified as of this writing. Nothing is committed to
+git — the working tree (24 modified + ~25 new files across backend/frontend/config) is
+ready for review. Remaining genuinely open items, none blocking:
+
+- ClamAV has no AWS deployment story yet (sidecar vs. separate ECS/Fargate service) — a
+  real decision that was deliberately left open rather than guessed at (see Phase 8).
+- No live AWS deployment was performed — no credentials available in this environment, and
+  that's not a decision to make autonomously regardless of capability.
+- `TestcontainersTest` (the one Postgres-Testcontainers smoke test, unrelated to any code
+  written in this project) can't be run to completion in this specific local setup — a
+  Docker-in-Docker networking limitation of wrapping `mvn test` in a JDK 17 container
+  (needed because the host's JDK 26 breaks Mockito's Byte Buddy). Every other test — 35 of
+  them, all written or modified in this project — runs and passes normally. This would not
+  be an issue in the actual GitHub Actions CI, which runs directly on the runner.
