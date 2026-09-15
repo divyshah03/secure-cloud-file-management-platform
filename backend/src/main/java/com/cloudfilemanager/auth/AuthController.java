@@ -42,7 +42,7 @@ public class AuthController {
     public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody AuthenticationRequest request) {
         AuthenticationResponse response = authenticationService.login(request);
         return ResponseEntity.ok()
-                .header(HttpHeaders.AUTHORIZATION, response.token())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + response.token())
                 .body(response);
     }
 
