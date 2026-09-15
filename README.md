@@ -5,11 +5,7 @@ expiring shareable links, direct-to-S3 transfer via presigned URLs, malware scan
 upload, a full audit trail, and rate limiting — built on Spring Boot + React + PostgreSQL +
 S3-compatible object storage.
 
-> 📝 **Origin note:** this project started from a publicly available Spring Boot/React
-> starter template (basic auth + single-owner file CRUD). Everything past that — RBAC,
-> sharing links, presigned S3 transfer, ClamAV scanning, the audit log, rate limiting,
-> structured logging — is a substantial rebuild on top of that foundation, not the
-> template's own content. Said plainly here rather than glossed over.
+
 
 ## ✨ Features
 
