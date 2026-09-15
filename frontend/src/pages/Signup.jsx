@@ -1,7 +1,8 @@
 import { useAuth } from '../AuthProvider.jsx';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Flex, Heading, Image, Link, Stack, Text, Button } from '@chakra-ui/react';
+import { Flex, Heading, Icon, Link, Stack, Text, Button } from '@chakra-ui/react';
+import { FiCloud } from 'react-icons/fi';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import { register } from '../api/client.js';
@@ -117,12 +118,16 @@ const Signup = () => {
         <Stack minH={'100vh'} direction={{base: 'column', md: 'row'}}>
             <Flex p={8} flex={1} alignItems={'center'} justifyContent={'center'}>
                 <Stack spacing={4} w={'full'} maxW={'md'}>
-                    <Image
-                        src={"https://user-images.githubusercontent.com/40702606/210880158-e7d698c2-b19a-4057-b415-09f48a746753.png"}
-                        boxSize={"200px"}
-                        alt={"Logo"}
+                    <Flex
+                        boxSize={"120px"}
+                        borderRadius={"full"}
                         alignSelf={"center"}
-                    />
+                        alignItems={"center"}
+                        justifyContent={"center"}
+                        bgGradient={"linear(to-br, blue.500, purple.600)"}
+                    >
+                        <Icon as={FiCloud} boxSize={"60px"} color={"white"} />
+                    </Flex>
                     <Heading fontSize={'2xl'} mb={15}>Create your account</Heading>
                     <RegistrationForm/>
                     <Link as={RouterLink} color={"blue.500"} to={"/login"}>

@@ -17,8 +17,7 @@ import {
     Text,
     useColorModeValue,
     useDisclosure,
-    VStack,
-    Image
+    VStack
 } from '@chakra-ui/react';
 
 import {
@@ -28,7 +27,8 @@ import {
     FiMenu,
     FiSettings,
     FiFile,
-    FiActivity
+    FiActivity,
+    FiCloud
 } from 'react-icons/fi';
 import { useAuth } from '../../AuthProvider.jsx';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -83,12 +83,15 @@ const SidebarContent = ({onClose, ...rest}) => {
                 <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold" mb={5}>
                     Cloud File Manager
                 </Text>
-                <Image
-                    borderRadius='full'
+                <Flex
                     boxSize='75px'
-                    src='https://user-images.githubusercontent.com/40702606/210880158-e7d698c2-b19a-4057-b415-09f48a746753.png'
-                    alt='Logo'
-                />
+                    borderRadius='full'
+                    alignItems='center'
+                    justifyContent='center'
+                    bgGradient='linear(to-br, blue.500, purple.600)'
+                >
+                    <Icon as={FiCloud} boxSize='36px' color='white' />
+                </Flex>
                 <CloseButton display={{base: 'flex', md: 'none'}} onClick={onClose}/>
             </Flex>
             {LinkItems.map((link) => (
