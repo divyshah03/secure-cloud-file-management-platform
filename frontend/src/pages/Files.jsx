@@ -23,14 +23,20 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogContent,
-    AlertDialogOverlay
+    AlertDialogOverlay,
+    Tabs,
+    TabList,
+    TabPanels,
+    Tab,
+    TabPanel
 } from '@chakra-ui/react';
 import { AddIcon, RepeatIcon } from '@chakra-ui/icons';
 import Sidebar from '../components/layout/Sidebar.jsx';
-import { useEffect, useState, useRef } from 'react';
-import { getFiles, deleteFile, downloadFileAsBlob, getFileStats } from '../api/client.js';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { getFiles, deleteFile, downloadFileDirect, getFileStats, getSharedWithMeFiles } from '../api/client.js';
 import FileCard from '../components/file/FileCard.jsx';
 import FileUpload from '../components/file/FileUpload.jsx';
+import ShareModal from '../components/file/ShareModal.jsx';
 import { errorNotification, successNotification } from '../notification.js';
 
 const Files = () => {
@@ -50,6 +56,10 @@ const Files = () => {
     } = useDisclosure();
     const [fileToDelete, setFileToDelete] = useState(null);
     const cancelRef = useRef();
+    const [sharedFiles, setSharedFiles] = useState([]);
+    const [sharedLoading, setSharedLoading] = useState(false);
+    const [shareModalFile, setShareModalFile] = useState(null);
+    const { isOpen: isShareOpen, onOpen: onShareOpen, onClose: onShareClose } = useDisclosure();
 
     const fetchFiles = () => {
         setLoading(true);
@@ -86,10 +96,30 @@ const Files = () => {
             });
     };
 
+    const fetchSharedFiles = useCallback(() => {
+        setSharedLoading(true);
+        getSharedWithMeFiles()
+            .then((res) => setSharedFiles(res.data))
+            .catch((err) => {
+                const errorMessage = err.response?.data?.message ||
+                                   err.response?.data?.error ||
+                                   err.message ||
+                                   "Failed to load shared files";
+                errorNotification("Error", errorMessage);
+            })
+            .finally(() => setSharedLoading(false));
+    }, []);
+
     useEffect(() => {
         fetchFiles();
         fetchStats();
+        fetchSharedFiles();
     }, [page, sortBy, sortDir]);
+
+    const handleShareFile = (file) => {
+        setShareModalFile(file);
+        onShareOpen();
+    };
 
     const handleFileUploaded = () => {
         onClose();
@@ -110,6 +140,7 @@ const Files = () => {
             successNotification("Success", "File deleted successfully");
             fetchFiles();
             fetchStats();
+            fetchSharedFiles();
         } catch (err) {
             const errorMessage = err.response?.data?.message ||
                                err.response?.data?.error ||
@@ -124,7 +155,7 @@ const Files = () => {
 
     const handleDownloadFile = async (fileId, fileName) => {
         try {
-            await downloadFileAsBlob(fileId, fileName);
+            await downloadFileDirect(fileId, fileName);
             successNotification("Success", "File download started");
         } catch (err) {
             const errorMessage = err.response?.data?.message || 
@@ -228,59 +259,101 @@ const Files = () => {
                     </Alert>
                 )}
 
-                {files.length === 0 && !loading ? (
-                    <Box
-                        p={8}
-                        borderWidth={1}
-                        borderRadius="lg"
-                        textAlign="center"
-                    >
-                        <Text fontSize="xl" mb={4}>No files uploaded yet</Text>
-                        <Button
-                            leftIcon={<AddIcon />}
-                            colorScheme="blue"
-                            onClick={onOpen}
-                        >
-                            Upload Your First File
-                        </Button>
-                    </Box>
-                ) : (
-                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
-                        {files.map((file) => (
-                            <FileCard
-                                key={file.id}
-                                file={file}
-                                onDelete={handleDeleteFile}
-                                onDownload={handleDownloadFile}
-                            />
-                        ))}
-                    </SimpleGrid>
-                )}
+                <Tabs colorScheme="blue">
+                    <TabList>
+                        <Tab>My Files</Tab>
+                        <Tab>Shared with Me{sharedFiles.length > 0 ? ` (${sharedFiles.length})` : ''}</Tab>
+                    </TabList>
+                    <TabPanels>
+                        <TabPanel px={0}>
+                            {files.length === 0 && !loading ? (
+                                <Box
+                                    p={8}
+                                    borderWidth={1}
+                                    borderRadius="lg"
+                                    textAlign="center"
+                                >
+                                    <Text fontSize="xl" mb={4}>No files uploaded yet</Text>
+                                    <Button
+                                        leftIcon={<AddIcon />}
+                                        colorScheme="blue"
+                                        onClick={onOpen}
+                                    >
+                                        Upload Your First File
+                                    </Button>
+                                </Box>
+                            ) : (
+                                <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+                                    {files.map((file) => (
+                                        <FileCard
+                                            key={file.id}
+                                            file={file}
+                                            onDelete={handleDeleteFile}
+                                            onDownload={handleDownloadFile}
+                                            onShare={handleShareFile}
+                                        />
+                                    ))}
+                                </SimpleGrid>
+                            )}
 
-                {totalPages > 1 && (
-                    <Flex justify="center" align="center" gap={4} mt={8}>
-                        <Button
-                            onClick={() => setPage((p) => Math.max(0, p - 1))}
-                            isDisabled={page === 0 || loading}
-                        >
-                            Previous
-                        </Button>
-                        <Text fontSize="sm">
-                            Page {page + 1} of {totalPages}
-                        </Text>
-                        <Button
-                            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                            isDisabled={page >= totalPages - 1 || loading}
-                        >
-                            Next
-                        </Button>
-                    </Flex>
-                )}
+                            {totalPages > 1 && (
+                                <Flex justify="center" align="center" gap={4} mt={8}>
+                                    <Button
+                                        onClick={() => setPage((p) => Math.max(0, p - 1))}
+                                        isDisabled={page === 0 || loading}
+                                    >
+                                        Previous
+                                    </Button>
+                                    <Text fontSize="sm">
+                                        Page {page + 1} of {totalPages}
+                                    </Text>
+                                    <Button
+                                        onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                                        isDisabled={page >= totalPages - 1 || loading}
+                                    >
+                                        Next
+                                    </Button>
+                                </Flex>
+                            )}
+                        </TabPanel>
+                        <TabPanel px={0}>
+                            {sharedLoading ? (
+                                <Flex justify="center" py={8}>
+                                    <Spinner />
+                                </Flex>
+                            ) : sharedFiles.length === 0 ? (
+                                <Box p={8} borderWidth={1} borderRadius="lg" textAlign="center">
+                                    <Text fontSize="xl">No files have been shared with you yet</Text>
+                                </Box>
+                            ) : (
+                                <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+                                    {sharedFiles.map((file) => (
+                                        <FileCard
+                                            key={file.id}
+                                            file={file}
+                                            onDelete={(id, name) => {
+                                                handleDeleteFile(id, name);
+                                            }}
+                                            onDownload={handleDownloadFile}
+                                            onShare={handleShareFile}
+                                        />
+                                    ))}
+                                </SimpleGrid>
+                            )}
+                        </TabPanel>
+                    </TabPanels>
+                </Tabs>
 
                 <FileUpload
                     isOpen={isOpen}
                     onClose={onClose}
                     onSuccess={handleFileUploaded}
+                />
+
+                <ShareModal
+                    isOpen={isShareOpen}
+                    onClose={onShareClose}
+                    file={shareModalFile}
                 />
 
                 <AlertDialog
