@@ -1,40 +1,40 @@
-# Cloud File Manager
+# ☁️ Cloud File Manager
 
 A secure cloud file collaboration platform: per-file role-based sharing (owner/editor/viewer),
 expiring shareable links, direct-to-S3 transfer via presigned URLs, malware scanning on
 upload, a full audit trail, and rate limiting — built on Spring Boot + React + PostgreSQL +
 S3-compatible object storage.
 
-> **Origin note:** this project started from an Amigoscode Spring Boot/React tutorial
-> template (basic auth + single-owner file CRUD). Everything past that — RBAC, sharing
-> links, presigned S3 transfer, ClamAV scanning, the audit log, rate limiting, structured
-> logging — is a substantial rebuild on top of that foundation, not the tutorial's own
-> content. Said plainly here rather than glossed over.
+> 📝 **Origin note:** this project started from a publicly available Spring Boot/React
+> starter template (basic auth + single-owner file CRUD). Everything past that — RBAC,
+> sharing links, presigned S3 transfer, ClamAV scanning, the audit log, rate limiting,
+> structured logging — is a substantial rebuild on top of that foundation, not the
+> template's own content. Said plainly here rather than glossed over.
 
-## Features
+## ✨ Features
 
-- **Per-file RBAC** — Owner / Editor / Viewer roles, enforced on every file endpoint
+- 🔐 **Per-file RBAC** — Owner / Editor / Viewer roles, enforced on every file endpoint
   (view, download, delete), not just at the UI layer
-- **Expiring shareable links** — generate a scoped, time-limited link that works for
+- 🔗 **Expiring shareable links** — generate a scoped, time-limited link that works for
   anonymous recipients with no account, revocable at any time
-- **Direct-to-storage transfer** — uploads/downloads go straight between the browser and
+- ⚡ **Direct-to-storage transfer** — uploads/downloads go straight between the browser and
   S3-compatible storage via presigned URLs; the backend only ever issues short-lived signed
   URLs, not proxied bytes (with an automatic fallback to backend-proxied transfer if
   presigned URLs aren't available in a given environment)
-- **Malware scanning** — every upload is scanned against a real ClamAV instance
+- 🛡️ **Malware scanning** — every upload is scanned against a real ClamAV instance
   (hand-written INSTREAM protocol client, no third-party ClamAV library) before it's
   persisted; infected files are rejected and cleaned up, fail-closed by default
-- **Audit log / activity feed** — every mutating action (upload, download, delete,
+- 📋 **Audit log / activity feed** — every mutating action (upload, download, delete,
   permission grant/revoke, link create/revoke/redeem) is recorded with actor, target file,
   and timestamp, queryable per-file (owner view) or as "my activity" (self view)
-- **Rate limiting** — per-user (falling back to per-IP for anonymous requests) request
+- 🚦 **Rate limiting** — per-user (falling back to per-IP for anonymous requests) request
   throttling on the API, with no impact on bulk file-transfer throughput since bytes never
   pass through the rate-limited path
-- **Structured logging** — JSON logs with a request-correlation ID propagated through
+- 📊 **Structured logging** — JSON logs with a request-correlation ID propagated through
   every component touched by a request, for containerized/production environments
-- **JWT authentication** with email verification, BCrypt password storage
+- 🔑 **JWT authentication** with email verification, BCrypt password storage
 
-## Tech Stack
+## 🛠️ Tech Stack
 
 ### Backend
 - **Spring Boot 3** (Java 17), **Spring Security** with JWT
@@ -48,7 +48,7 @@ S3-compatible object storage.
 ### Frontend
 - **React 18**, **React Router**, **Chakra UI**, **Axios**, **Vite**
 
-## Setup
+## 🚀 Setup
 
 ### Quick start (recommended — full feature set: RBAC, presigned URLs, malware scanning)
 
@@ -64,7 +64,7 @@ virus definitions download); subsequent starts are fast.
 - Backend: `http://localhost:8080`
 - MinIO console: `http://localhost:9001` (user/pass: `minioadmin` / `minioadmin`)
 
-> **Port note:** if `5332` (Postgres) is already in use on your machine, override it:
+> ⚠️ **Port note:** if `5332` (Postgres) is already in use on your machine, override it:
 > `DB_HOST_PORT=5433 docker compose up --build`.
 
 ### Manual setup (backend + frontend against just a dockerized database)
@@ -88,7 +88,7 @@ credentials configured, which will make signup fail unless you either set
 - Java 17+, Maven 3.6+, Node.js 18+, PostgreSQL 14+
 - Docker (for the recommended quick-start path)
 
-## Architecture
+## 🏗️ Architecture
 
 ```
 Browser ──┬── JWT-authenticated API calls ──> Spring Boot backend ──> PostgreSQL
@@ -107,7 +107,7 @@ Browser ──┬── JWT-authenticated API calls ──> Spring Boot backend 
 - Shareable links are a separate, scoped grant (role + expiry, single token) distinct from
   per-user permissions, and work without the recipient having an account.
 
-## API Overview
+## 📡 API Overview
 
 | Area | Endpoints |
 |---|---|
@@ -118,7 +118,7 @@ Browser ──┬── JWT-authenticated API calls ──> Spring Boot backend 
 | Share links | `{GET,POST} /api/v1/files/{id}/share-links` · `DELETE .../share-links/{id}` · public: `GET /api/v1/share/{token}[/download,/presigned-download]` |
 | Audit log | `GET /api/v1/files/{id}/audit-log` (owner) · `GET /api/v1/audit-log/me` (self) |
 
-## Testing
+## 🧪 Testing
 
 - JUnit 5 + Mockito unit tests: `FileServiceTest`, `FilePermissionServiceTest` (full
   role-permission matrix via parameterized tests), `ShareLinkServiceTest` (including
@@ -130,7 +130,7 @@ Browser ──┬── JWT-authenticated API calls ──> Spring Boot backend 
 - Real load-test numbers (k6, 20 concurrent users, 30s, 1MB files) comparing the proxied
   and presigned transfer paths — see below
 
-## Real Measured Performance
+## 📈 Real Measured Performance
 
 Replacing a previous unverified "25% latency reduction" claim with actual numbers,
 recorded from a live k6 run against this stack (proxied path vs. presigned-URL path, same
@@ -142,7 +142,7 @@ load profile for both):
 | p95 request duration | 153.9ms | 75.9ms | **−51%** |
 | Completed transfer cycles/sec | 63.6/s | 111.1/s | **+75%** |
 
-## Deployment
+## 🚢 Deployment
 
 `backend/src/main/resources/application-aws.yml` configures the `aws` Spring profile:
 Postgres via AWS Secrets Manager-backed JDBC (no hardcoded credentials), and real S3
@@ -153,7 +153,7 @@ MinIO's static ones. Running ClamAV in a managed AWS environment needs its own d
 feature is currently only exercised via the docker-compose ClamAV container documented
 above.
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 backend/src/main/java/com/cloudfilemanager/
@@ -176,6 +176,10 @@ frontend/src/
 └── utils/
 ```
 
-## License
+## 👤 Author
+
+Divy Shah
+
+## 📄 License
 
 This project is part of a portfolio demonstration.
