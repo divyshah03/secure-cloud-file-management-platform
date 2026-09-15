@@ -37,10 +37,6 @@ public class AuthenticationService {
             );
 
             User principal = (User) authentication.getPrincipal();
-            
-            if (!principal.isEnabled()) {
-                throw new IllegalStateException("Email not verified. Please verify your email before logging in.");
-            }
 
             com.cloudfilemanager.user.dto.UserDto userDto = userDtoMapper.apply(principal);
             String token = jwtUtil.issueToken(userDto.email(), userDto.role().name());
