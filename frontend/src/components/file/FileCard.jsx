@@ -14,6 +14,7 @@ import {
     VStack
 } from '@chakra-ui/react';
 import { TimeIcon, DownloadIcon, DeleteIcon } from '@chakra-ui/icons';
+import { FiShare2 } from 'react-icons/fi';
 import { formatFileSize } from '../../utils/formatFileSize.js';
 
 const getFileIcon = (contentType) => {
@@ -28,9 +29,12 @@ const getFileIcon = (contentType) => {
     return '📄';
 };
 
-export default function FileCard({ file, onDelete, onDownload }) {
+export default function FileCard({ file, onDelete, onDownload, onShare }) {
     const cardBg = useColorModeValue('white', 'gray.800');
     const borderColor = useColorModeValue('gray.200', 'gray.700');
+    const role = file.role || 'OWNER';
+    const canDelete = role === 'OWNER' || role === 'EDITOR';
+    const canShare = role === 'OWNER';
 
     const handleDownload = () => {
         onDownload(file.id, file.originalFileName);
@@ -39,6 +43,12 @@ export default function FileCard({ file, onDelete, onDownload }) {
     const handleDelete = () => {
         onDelete(file.id, file.originalFileName);
     };
+
+    const handleShare = () => {
+        onShare(file);
+    };
+
+    const roleBadgeColor = { OWNER: 'blue', EDITOR: 'purple', VIEWER: 'gray' }[role] || 'gray';
 
     const formatDate = (dateString) => {
         if (!dateString) return 'Unknown';
@@ -94,16 +104,30 @@ export default function FileCard({ file, onDelete, onDownload }) {
                                 aria-label="Download file"
                             />
                         </Tooltip>
-                        <Tooltip label="Delete">
-                            <IconButton
-                                icon={<DeleteIcon />}
-                                size="sm"
-                                colorScheme="red"
-                                variant="ghost"
-                                onClick={handleDelete}
-                                aria-label="Delete file"
-                            />
-                        </Tooltip>
+                        {canShare && (
+                            <Tooltip label="Share">
+                                <IconButton
+                                    icon={<FiShare2 />}
+                                    size="sm"
+                                    colorScheme="teal"
+                                    variant="ghost"
+                                    onClick={handleShare}
+                                    aria-label="Share file"
+                                />
+                            </Tooltip>
+                        )}
+                        {canDelete && (
+                            <Tooltip label="Delete">
+                                <IconButton
+                                    icon={<DeleteIcon />}
+                                    size="sm"
+                                    colorScheme="red"
+                                    variant="ghost"
+                                    onClick={handleDelete}
+                                    aria-label="Delete file"
+                                />
+                            </Tooltip>
+                        )}
                     </HStack>
                 </Flex>
             </CardHeader>
@@ -113,9 +137,14 @@ export default function FileCard({ file, onDelete, onDownload }) {
                         <Text fontSize="sm" color="gray.600">
                             {formatFileSize(file.fileSize || 0)}
                         </Text>
-                        <Badge colorScheme="blue" fontSize="xs">
-                            {file.contentType?.split('/')[0] || 'file'}
-                        </Badge>
+                        <HStack>
+                            <Badge colorScheme="blue" fontSize="xs">
+                                {file.contentType?.split('/')[0] || 'file'}
+                            </Badge>
+                            <Badge colorScheme={roleBadgeColor} fontSize="xs">
+                                {role}
+                            </Badge>
+                        </HStack>
                     </Flex>
                     <Flex align="center" fontSize="xs" color="gray.500">
                         <TimeIcon mr={1} />
